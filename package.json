@@ -1,0 +1,24 @@
+{
+  "name": "rich-embeds",
+  "version": "0.0.1",
+  "description": "Obsidian Embed Plugin",
+  "main": "main.js",
+  "repository": "https://github.com/erykwalder/rich-embeds",
+  "author": "Eric Rykwalder <e.rykwalder@gmail.com>",
+  "license": "MIT",
+  "private": false,
+  "scripts": {
+    "dev": "rollup --config rollup.config.js -w",
+    "build": "rollup --config rollup.config.js"
+  },
+  "devDependencies": {
+    "@rollup/plugin-commonjs": "^19.0.0",
+    "@rollup/plugin-node-resolve": "^13.0.0",
+    "@rollup/plugin-typescript": "^8.2.1",
+    "@types/node": "^16.0.0",
+    "obsidian": "^0.12.5",
+    "rollup": "^2.52.7",
+    "tslib": "^2.3.0",
+    "typescript": "^4.3.5"
+  }
+}

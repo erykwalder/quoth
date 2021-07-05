@@ -1,0 +1,14 @@
+# npm
+node_modules
+package-lock.json
+yarn.lock
+
+# build
+main.js
+*.js.map
+
+# obsidian
+data.json
+
+# mac
+.DS_STORE
