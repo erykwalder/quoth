@@ -18,6 +18,10 @@ export interface Pos {
   col: number;
 }
 
+export function isPos(object: any): object is Pos {
+  return "line" in object;
+}
+
 export interface EmbedOptions {
   title: boolean;
   author: boolean;
@@ -43,7 +47,7 @@ type LineParser = (text: string, data: Embed) => void;
 const lineParsers: { [key: string]: LineParser } = {
   file: (text: string, data: Embed) => {
     // Match: [[text]]
-    if (/^\[\[.+?\]\]$/.test(text)) {
+    if (/^.+?$/.test(text)) {
       data.file = text;
     } else {
       throw new Error("invalid file line");
