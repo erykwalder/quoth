@@ -14,7 +14,7 @@ export default class RichEmbedsPlugin extends Plugin {
 
     this.addCommand({
       id: "quoth-copy-reference",
-      name: "Copy Quoth Reference",
+      name: "Copy Reference",
       checkCallback: (checking: boolean) => {
         const view = this.app.workspace.activeLeaf.view as MarkdownView;
         if (!checking) {

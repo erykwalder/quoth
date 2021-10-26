@@ -1,10 +1,10 @@
 {
-  "id": "rich-embeds",
-  "name": "Rich Embeds",
+  "id": "quoth",
+  "name": "Quoth",
   "version": "0.0.1",
   "minAppVersion": "0.12.9",
   "description": "Allow for more flexible file embedding.",
   "author": "Eric Rykwalder",
   "authorUrl": "https://github.com/erykwalder/rich-embeds",
-  "isDesktopOnly": false
+  "isDesktopOnly": true
 }
