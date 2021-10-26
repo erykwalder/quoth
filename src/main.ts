@@ -6,6 +6,7 @@ import {
 } from "obsidian";
 import { isPos, parse, Pos } from "./parse";
 import { clipboard } from "electron";
+import { indexOfLine } from "./stringSearch";
 
 export default class RichEmbedsPlugin extends Plugin {
   async onload() {
@@ -70,18 +71,8 @@ async function quothProcessor(
   MarkdownRenderer.renderMarkdown(quote, el, ctx.sourcePath, null);
 }
 
-function strRange(str: string, start: Pos, end: Pos): string {
-  let startChr = 0;
-  let endChr = 0;
-  let idx = -1;
-  for (let line = 1; (idx = str.indexOf("\n", idx + 1)); line++) {
-    if (line == start.line) {
-      startChr = idx + start.col + 1;
-    }
-    if (line == end.line) {
-      endChr = idx + end.col + 1;
-      break;
-    }
-  }
-  return str.substring(startChr, endChr);
+function strRange(text: string, start: Pos, end: Pos): string {
+  const startChr = indexOfLine(text, start.line) + start.col;
+  const endChr = indexOfLine(text, end.line) + end.col;
+  return text.substring(startChr, endChr);
 }
