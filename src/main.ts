@@ -2,10 +2,9 @@ import {
   MarkdownPostProcessorContext,
   Plugin,
   MarkdownView,
-  MarkdownPreviewView,
   MarkdownRenderer,
 } from "obsidian";
-import { EmbedRange, isPos, parse, Pos } from "./parse";
+import { isPos, parse, Pos } from "./parse";
 import { clipboard } from "electron";
 
 export default class RichEmbedsPlugin extends Plugin {
