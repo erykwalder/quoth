@@ -74,11 +74,10 @@ describe("parser", () => {
   });
 
   it("parses show options", () => {
-    const result: Embed = parse("show: title, author, created");
+    const result: Embed = parse("show: title, author");
     expect(result.show).toStrictEqual({
       title: true,
       author: true,
-      created: true,
     });
   });
 
@@ -113,7 +112,7 @@ heading: #Heading#21
 block: ^asdf
 ranges: 123:10 to 125:10, 150:6 to "text", "start" to "end"
 join: ", "
-show: title, created
+show: title
 display: inline`;
     const result: Embed = parse(text);
     expect(result).toStrictEqual({
@@ -138,7 +137,6 @@ display: inline`;
       show: {
         title: true,
         author: false,
-        created: true,
       },
       display: "inline",
     });

@@ -25,7 +25,6 @@ export function isPos(obj: any): obj is Pos {
 export interface EmbedOptions {
   title: boolean;
   author: boolean;
-  created: boolean;
 }
 
 const parseRangeEndToken = (token: string): Pos | string => {
@@ -143,7 +142,6 @@ export const parse = (text: string): Embed => {
     show: {
       title: false,
       author: false,
-      created: false,
     },
     display: "embedded",
   };
