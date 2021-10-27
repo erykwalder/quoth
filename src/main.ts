@@ -9,7 +9,7 @@ import { parse } from "./parse";
 import { clipboard } from "electron";
 import { isRepeated, strRange, uniqueStrRange } from "./stringSearch";
 
-export default class RichEmbedsPlugin extends Plugin {
+export default class QuothPlugin extends Plugin {
   async onload() {
     this.registerMarkdownCodeBlockProcessor("quoth", quothProcessor);
 

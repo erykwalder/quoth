@@ -5,6 +5,6 @@
   "minAppVersion": "0.12.9",
   "description": "Allow for more flexible file embedding.",
   "author": "Eric Rykwalder",
-  "authorUrl": "https://github.com/erykwalder/rich-embeds",
+  "authorUrl": "https://github.com/erykwalder/quoth",
   "isDesktopOnly": true
 }
