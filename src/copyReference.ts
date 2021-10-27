@@ -1,5 +1,5 @@
 import { clipboard } from "electron";
-import { MarkdownView, Plugin } from "obsidian";
+import { MarkdownView } from "obsidian";
 import { isRepeated, uniqueStrRange } from "./stringSearch";
 
 export default function copyReference(checking: boolean) {
