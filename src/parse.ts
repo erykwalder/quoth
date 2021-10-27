@@ -18,8 +18,8 @@ export interface Pos {
   col: number;
 }
 
-export function isPos(object: any): object is Pos {
-  return "line" in object;
+export function isPos(obj: any): obj is Pos {
+  return obj instanceof Object && "line" in obj;
 }
 
 export interface EmbedOptions {

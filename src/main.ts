@@ -5,9 +5,9 @@ import {
   MarkdownRenderer,
   TFile,
 } from "obsidian";
-import { isPos, parse, Pos } from "./parse";
+import { parse } from "./parse";
 import { clipboard } from "electron";
-import { indexOfLine } from "./stringSearch";
+import { strRange } from "./stringSearch";
 
 export default class RichEmbedsPlugin extends Plugin {
   async onload() {
@@ -62,23 +62,12 @@ async function quothProcessor(
   }
   const fileData = await this.app.vault.cachedRead(file);
   const quote = embed.ranges
-    .map((range) => {
-      if (isPos(range.start) && isPos(range.end)) {
-        return strRange(fileData, range.start, range.end);
-      }
-      return "Not implemented.";
-    })
+    .map((range) => strRange(fileData, range))
     .join(embed.join);
   if (embed.display == "embedded") {
     el = createEmbedWrapper(el, file, embed.heading);
   }
   MarkdownRenderer.renderMarkdown(quote, el, ctx.sourcePath, null);
-}
-
-function strRange(text: string, start: Pos, end: Pos): string {
-  const startChr = indexOfLine(text, start.line) + start.col;
-  const endChr = indexOfLine(text, end.line) + end.col;
-  return text.substring(startChr, endChr);
 }
 
 function createEmbedWrapper(
