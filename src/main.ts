@@ -32,7 +32,7 @@ export default class RichEmbedsPlugin extends Plugin {
               [start, end] = [end, start];
             }
 
-            ref += `file: ${this.app.workspace.getActiveFile().path}\n`;
+            ref += `file: [[${this.app.workspace.getActiveFile().path}]]\n`;
             ref += `ranges: ${start.line}:${start.ch} to ${end.line}:${end.ch}\n`;
 
             ref += "```";

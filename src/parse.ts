@@ -46,9 +46,9 @@ type LineParser = (text: string, data: Embed) => void;
 
 const lineParsers: { [key: string]: LineParser } = {
   file: (text: string, data: Embed) => {
-    // Match: filename
-    if (/^.+?$/.test(text)) {
-      data.file = text;
+    // Match: [[filename]]
+    if (/^\[\[.+?\]\]$/.test(text)) {
+      data.file = text.slice(2, -2);
     } else {
       throw new Error("invalid file line");
     }

@@ -2,10 +2,10 @@ import { parse, Embed } from "./parse";
 
 describe("parser", () => {
   it("parses the file name", () => {
-    let result: Embed = parse("file: Once in a Blue Moon");
+    let result: Embed = parse("file: [[Once in a Blue Moon]]");
     expect(result.file).toBe("Once in a Blue Moon");
 
-    result = parse("file: Twice in a Blue Moon");
+    result = parse("file: [[Twice in a Blue Moon]]");
     expect(result.file).toBe("Twice in a Blue Moon");
   });
 
@@ -99,7 +99,7 @@ describe("parser", () => {
 
   it("parses multiple lines", () => {
     const text = `
-file: Once in a Blue Moon
+file: [[Once in a Blue Moon]]
 heading: #Lunar Cycles
     `;
     const result: Embed = parse(text);
@@ -108,7 +108,7 @@ heading: #Lunar Cycles
   });
 
   it("parses a whole block", () => {
-    const text = `file: File Title
+    const text = `file: [[File Title]]
 heading: #Heading#21
 block: ^asdf
 ranges: 123:10 to 125:10, 150:6 to "text", "start" to "end"
