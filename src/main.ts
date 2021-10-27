@@ -3,6 +3,7 @@ import {
   Plugin,
   MarkdownView,
   MarkdownRenderer,
+  TFile,
 } from "obsidian";
 import { isPos, parse, Pos } from "./parse";
 import { clipboard } from "electron";
@@ -68,6 +69,9 @@ async function quothProcessor(
       return "Not implemented.";
     })
     .join(embed.join);
+  if (embed.display == "embedded") {
+    el = createEmbedWrapper(el, file, embed.heading);
+  }
   MarkdownRenderer.renderMarkdown(quote, el, ctx.sourcePath, null);
 }
 
@@ -75,4 +79,38 @@ function strRange(text: string, start: Pos, end: Pos): string {
   const startChr = indexOfLine(text, start.line) + start.col;
   const endChr = indexOfLine(text, end.line) + end.col;
   return text.substring(startChr, endChr);
+}
+
+function createEmbedWrapper(
+  el: HTMLElement,
+  file: TFile,
+  heading?: string[]
+): HTMLElement {
+  let path = [file.basename];
+  if (heading && heading.length > 0) {
+    path = path.concat(heading);
+  }
+  const span = el.createSpan({
+    cls: "internal-embed is-loaded",
+    attr: {
+      alt: path.join(" > "),
+      src: path.join("#"),
+    },
+  });
+  const mdEmbed = span.createDiv({ cls: "markdown-embed" });
+  const mdEmbedCont = mdEmbed.createDiv({ cls: "markdown-embed-content" });
+  const mdPrev = mdEmbedCont.createDiv({ cls: "markdown-preview-view" });
+  const mdPrevSec = mdPrev.createDiv({
+    cls: "markdown-preview-sizer markdown-preview-section",
+    attr: {
+      style: "padding-bottom: 0px; min-height: 99px;",
+    },
+  });
+  mdPrevSec.createDiv({
+    cls: "markdown-preview-pusher",
+    attr: {
+      style: "width: 1px; height: 0.1px; margin-bottom: 0px;",
+    },
+  });
+  return mdPrevSec.createDiv();
 }
