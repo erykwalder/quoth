@@ -1,6 +1,6 @@
 export interface Embed {
   file?: string;
-  heading?: string;
+  heading?: string[];
   block?: string;
   ranges?: EmbedRange[];
   join: string;
@@ -46,7 +46,7 @@ type LineParser = (text: string, data: Embed) => void;
 
 const lineParsers: { [key: string]: LineParser } = {
   file: (text: string, data: Embed) => {
-    // Match: [[text]]
+    // Match: filename
     if (/^.+?$/.test(text)) {
       data.file = text;
     } else {
@@ -55,10 +55,14 @@ const lineParsers: { [key: string]: LineParser } = {
   },
   heading: (text: string, data: Embed) => {
     // Match: #text
-    if (/^#.+?$/.test(text)) {
-      data.heading = text;
-    } else {
-      throw new Error("invalid heading line");
+    const headingRegex = /#([^#]+)/g;
+    const headings: string[] = [];
+    let matches: string[];
+    while ((matches = headingRegex.exec(text)) !== null) {
+      headings.push(matches[1]);
+    }
+    if (headings.length > 0) {
+      data.heading = headings;
     }
   },
   block: (text: string, data: Embed) => {
