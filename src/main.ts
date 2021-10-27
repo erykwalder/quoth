@@ -7,7 +7,7 @@ import {
 } from "obsidian";
 import { parse } from "./parse";
 import { clipboard } from "electron";
-import { strRange } from "./stringSearch";
+import { isRepeated, strRange, uniqueStrRange } from "./stringSearch";
 
 export default class RichEmbedsPlugin extends Plugin {
   async onload() {
@@ -21,19 +21,30 @@ export default class RichEmbedsPlugin extends Plugin {
         if (!checking) {
           if (view) {
             let ref = "```quoth\n";
-
-            let selection = view.editor.listSelections()[0];
-            let start = selection.anchor;
-            let end = selection.head;
-            if (
-              start.line > end.line ||
-              (start.line == end.line && start.ch > end.ch)
-            ) {
-              [start, end] = [end, start];
-            }
-
             ref += `file: [[${this.app.workspace.getActiveFile().path}]]\n`;
-            ref += `ranges: ${start.line}:${start.ch} to ${end.line}:${end.ch}\n`;
+
+            const selectedText = view.editor.getSelection();
+
+            if (!isRepeated(view.editor.getValue(), selectedText)) {
+              const points = uniqueStrRange(
+                view.editor.getValue(),
+                selectedText
+              );
+              ref += `ranges: ${points
+                .map((p) => JSON.stringify(p))
+                .join(" to ")}\n`;
+            } else {
+              const selection = view.editor.listSelections()[0];
+              let start = selection.anchor;
+              let end = selection.head;
+              if (
+                start.line > end.line ||
+                (start.line == end.line && start.ch > end.ch)
+              ) {
+                [start, end] = [end, start];
+              }
+              ref += `ranges: ${start.line}:${start.ch} to ${end.line}:${end.ch}\n`;
+            }
 
             ref += "```";
 

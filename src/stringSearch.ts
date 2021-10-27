@@ -25,5 +25,25 @@ export function strRange(text: string, range: EmbedRange): string {
   } else {
     endChr = text.indexOf(range.end, startChr) + range.end.length;
   }
-  return text.substring(startChr, endChr);
+  return text.slice(startChr, endChr);
+}
+
+export function uniqueStrRange(text: string, search: string): string[] {
+  let startLen = Math.min(search.length, 10);
+  while (isRepeated(text, search.slice(0, startLen))) {
+    startLen += 1;
+  }
+  let endLen = Math.min(search.length, 10);
+  while (isRepeated(text, search.slice(-endLen))) {
+    endLen += 1;
+  }
+  if (startLen + endLen > search.length) {
+    return [search];
+  }
+  return [search.slice(0, startLen), search.slice(-endLen)];
+}
+
+export function isRepeated(text: string, search: string): boolean {
+  const idx = text.indexOf(search);
+  return idx > 0 && text.indexOf(search, idx + 1) > 0;
 }
