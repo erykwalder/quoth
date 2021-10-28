@@ -13,11 +13,11 @@ export function indexOfLine(text: string, line: number): number {
 
 export function uniqueStrRange(text: string, search: string): string[] {
   let startLen = Math.min(search.length, 10);
-  while (isRepeated(text, search.slice(0, startLen))) {
+  while (!isUnique(text, search.slice(0, startLen))) {
     startLen += 1;
   }
   let endLen = Math.min(search.length, 10);
-  while (isRepeated(text, search.slice(-endLen))) {
+  while (!isUnique(text, search.slice(-endLen))) {
     endLen += 1;
   }
   if (startLen + endLen > search.length) {
@@ -26,7 +26,7 @@ export function uniqueStrRange(text: string, search: string): string[] {
   return [search.slice(0, startLen), search.slice(-endLen)];
 }
 
-export function isRepeated(text: string, search: string): boolean {
+export function isUnique(text: string, search: string): boolean {
   const idx = text.indexOf(search);
-  return idx > 0 && text.indexOf(search, idx + 1) > 0;
+  return idx > 0 && text.indexOf(search, idx + 1) === -1;
 }

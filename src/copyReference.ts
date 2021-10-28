@@ -1,7 +1,7 @@
 import { clipboard } from "electron";
 import { Editor, Plugin, TFile } from "obsidian";
 import { Range, PosRange, StringRange } from "./range";
-import { isRepeated, uniqueStrRange } from "./stringSearch";
+import { isUnique, uniqueStrRange } from "./stringSearch";
 
 export function copyEditorReference(
   plugin: Plugin,
@@ -20,7 +20,7 @@ export function copyEditorReference(
 }
 
 function getBestRange(doc: string, editor: Editor): Range {
-  if (!isRepeated(doc, editor.getSelection())) {
+  if (isUnique(doc, editor.getSelection())) {
     const points = uniqueStrRange(doc, editor.getSelection());
     return new StringRange(points[0], points[1]);
   } else {
