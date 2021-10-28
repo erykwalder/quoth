@@ -5,7 +5,6 @@ import {
   TFile,
 } from "obsidian";
 import { parse } from "./parse";
-import { strRange } from "./stringSearch";
 import { copyEditorReference } from "./copyReference";
 
 export default class QuothPlugin extends Plugin {
@@ -36,7 +35,7 @@ async function quothProcessor(
     }
     const fileData = await this.app.vault.cachedRead(file);
     const quote = embed.ranges
-      .map((range) => strRange(fileData, range))
+      .map((range) => range.text(fileData))
       .join(embed.join);
     if (embed.display == "embedded") {
       el = createEmbedWrapper(el, file, embed.heading);

@@ -1,43 +1,21 @@
+import { Range, Pos, PosRange, StringRange } from "./range";
+
 export type Embed = {
   file?: string;
   heading?: string[];
   block?: string;
-  ranges?: EmbedRange[];
+  ranges?: Range[];
   join: string;
   show: EmbedOptions;
   display: "embedded" | "inline";
 };
-
-export type PosRange = {
-  start: Pos;
-  end: Pos;
-};
-
-export type StringRange = {
-  start: string;
-  end: string;
-};
-
-export type EmbedRange = {
-  start: Pos | string;
-  end: Pos | string;
-};
-
-export type Pos = {
-  line: number;
-  col: number;
-};
-
-export function isPos(obj: any): obj is Pos {
-  return obj instanceof Object && "line" in obj;
-}
 
 export type EmbedOptions = {
   title: boolean;
   author: boolean;
 };
 
-function parseRange(tokens: string[]): EmbedRange {
+function parseRange(tokens: string[]): Range {
   const cur = tokens[0];
   if (cur[0] === '"') {
     return parseStringRange(tokens);
@@ -52,7 +30,7 @@ function parseStringRange(tokens: string[]): StringRange {
     throw new Error("invalid ranges line");
   }
   const end = JSON.parse(tokens.shift()) as string;
-  return { start, end };
+  return new StringRange(start, end);
 }
 
 function parsePosRange(tokens: string[]): PosRange {
@@ -61,7 +39,7 @@ function parsePosRange(tokens: string[]): PosRange {
     throw new Error("invalid ranges line");
   }
   const end = parsePos(tokens.shift());
-  return { start, end };
+  return new PosRange(start, end);
 }
 
 function parsePos(token: string): Pos {

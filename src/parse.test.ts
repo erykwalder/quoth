@@ -1,4 +1,5 @@
 import { parse, Embed } from "./parse";
+import { PosRange, StringRange } from "./range";
 
 describe("parser", () => {
   it("parses the file name", () => {
@@ -27,34 +28,20 @@ describe("parser", () => {
   it("parses a single number-based range", () => {
     const result: Embed = parse("ranges: 5:10 to 7:15");
     expect(result.ranges).toStrictEqual([
-      {
-        start: { line: 5, col: 10 },
-        end: { line: 7, col: 15 },
-      },
+      new PosRange({ line: 5, col: 10 }, { line: 7, col: 15 }),
     ]);
   });
 
   it("parses a single string-based range", () => {
     const result: Embed = parse(`ranges: "Hello" to "world."`);
-    expect(result.ranges).toStrictEqual([
-      {
-        start: "Hello",
-        end: "world.",
-      },
-    ]);
+    expect(result.ranges).toStrictEqual([new StringRange("Hello", "world.")]);
   });
 
   it("parses multiple ranges", () => {
     const result: Embed = parse(`ranges: "Hello" to "foobar", "Biz" to "baz"`);
     expect(result.ranges).toStrictEqual([
-      {
-        start: "Hello",
-        end: "foobar",
-      },
-      {
-        start: "Biz",
-        end: "baz",
-      },
+      new StringRange("Hello", "foobar"),
+      new StringRange("Biz", "baz"),
     ]);
   });
 
@@ -110,18 +97,9 @@ display: inline`;
       heading: ["Heading", "21"],
       block: "^asdf",
       ranges: [
-        {
-          start: { line: 123, col: 10 },
-          end: { line: 125, col: 10 },
-        },
-        {
-          start: "doc",
-          end: "text",
-        },
-        {
-          start: "start",
-          end: "end",
-        },
+        new PosRange({ line: 123, col: 10 }, { line: 125, col: 10 }),
+        new StringRange("doc", "text"),
+        new StringRange("start", "end"),
       ],
       join: ", ",
       show: {
