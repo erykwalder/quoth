@@ -6,7 +6,7 @@ import {
 } from "obsidian";
 import { parse } from "./parse";
 import { strRange } from "./stringSearch";
-import copyReference from "./copyReference";
+import { copyEditorReference } from "./copyReference";
 
 export default class QuothPlugin extends Plugin {
   async onload() {
@@ -15,7 +15,7 @@ export default class QuothPlugin extends Plugin {
     this.addCommand({
       id: "quoth-copy-reference",
       name: "Copy Reference",
-      checkCallback: copyReference.bind(this),
+      editorCheckCallback: copyEditorReference.bind(null, this),
     });
   }
 }

@@ -13,6 +13,11 @@ export interface EmbedRange {
   end: Pos | string;
 }
 
+export interface PosRange {
+  start: Pos;
+  end: Pos;
+}
+
 export interface Pos {
   line: number;
   col: number;
