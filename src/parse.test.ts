@@ -44,26 +44,16 @@ describe("parser", () => {
     ]);
   });
 
-  it("parses a single mixed range", () => {
-    const result: Embed = parse(`ranges: "Hello" to 7:15`);
-    expect(result.ranges).toStrictEqual([
-      {
-        start: "Hello",
-        end: { line: 7, col: 15 },
-      },
-    ]);
-  });
-
   it("parses multiple ranges", () => {
-    const result: Embed = parse(`ranges: "Hello" to 7:15, 9:13 to "foobar"`);
+    const result: Embed = parse(`ranges: "Hello" to "foobar", "Biz" to "baz"`);
     expect(result.ranges).toStrictEqual([
       {
         start: "Hello",
-        end: { line: 7, col: 15 },
+        end: "foobar",
       },
       {
-        start: { line: 9, col: 13 },
-        end: "foobar",
+        start: "Biz",
+        end: "baz",
       },
     ]);
   });
@@ -110,7 +100,7 @@ heading: #Lunar Cycles
     const text = `file: [[File Title]]
 heading: #Heading#21
 block: ^asdf
-ranges: 123:10 to 125:10, 150:6 to "text", "start" to "end"
+ranges: 123:10 to 125:10, "doc" to "text", "start" to "end"
 join: ", "
 show: title
 display: inline`;
@@ -125,7 +115,7 @@ display: inline`;
           end: { line: 125, col: 10 },
         },
         {
-          start: { line: 150, col: 6 },
+          start: "doc",
           end: "text",
         },
         {

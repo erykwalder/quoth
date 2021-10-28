@@ -25,22 +25,24 @@ async function quothProcessor(
   el: HTMLElement,
   ctx: MarkdownPostProcessorContext
 ) {
-  const embed = parse(source);
-  const file = this.app.metadataCache.getFirstLinkpathDest(
-    embed.file,
-    ctx.sourcePath
-  );
-  if (!file) {
-    return;
-  }
-  const fileData = await this.app.vault.cachedRead(file);
-  const quote = embed.ranges
-    .map((range) => strRange(fileData, range))
-    .join(embed.join);
-  if (embed.display == "embedded") {
-    el = createEmbedWrapper(el, file, embed.heading);
-  }
-  MarkdownRenderer.renderMarkdown(quote, el, ctx.sourcePath, null);
+  try {
+    const embed = parse(source);
+    const file = this.app.metadataCache.getFirstLinkpathDest(
+      embed.file,
+      ctx.sourcePath
+    );
+    if (!file) {
+      return;
+    }
+    const fileData = await this.app.vault.cachedRead(file);
+    const quote = embed.ranges
+      .map((range) => strRange(fileData, range))
+      .join(embed.join);
+    if (embed.display == "embedded") {
+      el = createEmbedWrapper(el, file, embed.heading);
+    }
+    MarkdownRenderer.renderMarkdown(quote, el, ctx.sourcePath, null);
+  } catch (e) {}
 }
 
 function createEmbedWrapper(

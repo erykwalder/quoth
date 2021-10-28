@@ -1,4 +1,4 @@
-export interface Embed {
+export type Embed = {
   file?: string;
   heading?: string[];
   block?: string;
@@ -6,45 +6,72 @@ export interface Embed {
   join: string;
   show: EmbedOptions;
   display: "embedded" | "inline";
-}
+};
 
-export interface EmbedRange {
-  start: Pos | string;
-  end: Pos | string;
-}
-
-export interface PosRange {
+export type PosRange = {
   start: Pos;
   end: Pos;
-}
+};
 
-export interface Pos {
+export type StringRange = {
+  start: string;
+  end: string;
+};
+
+export type EmbedRange = {
+  start: Pos | string;
+  end: Pos | string;
+};
+
+export type Pos = {
   line: number;
   col: number;
-}
+};
 
 export function isPos(obj: any): obj is Pos {
   return obj instanceof Object && "line" in obj;
 }
 
-export interface EmbedOptions {
+export type EmbedOptions = {
   title: boolean;
   author: boolean;
+};
+
+function parseRange(tokens: string[]): EmbedRange {
+  const cur = tokens[0];
+  if (cur[0] === '"') {
+    return parseStringRange(tokens);
+  } else {
+    return parsePosRange(tokens);
+  }
 }
 
-const parseRangeEndToken = (token: string): Pos | string => {
-  if (token[0] === '"') {
-    return JSON.parse(token) as string;
-  }
-  const nums = token.split(":");
-  if (nums.length != 2) {
+function parseStringRange(tokens: string[]): StringRange {
+  const start = JSON.parse(tokens.shift()) as string;
+  if (tokens.shift() !== "to") {
     throw new Error("invalid ranges line");
   }
-  return {
-    line: parseInt(nums[0]),
-    col: parseInt(nums[1]),
-  };
-};
+  const end = JSON.parse(tokens.shift()) as string;
+  return { start, end };
+}
+
+function parsePosRange(tokens: string[]): PosRange {
+  const start = parsePos(tokens.shift());
+  if (tokens.shift() !== "to") {
+    throw new Error("invalid ranges line");
+  }
+  const end = parsePos(tokens.shift());
+  return { start, end };
+}
+
+function parsePos(token: string): Pos {
+  const parts = token.split(":");
+  if (parts.length !== 2) {
+    throw new Error("invalid ranges line");
+  }
+  const [line, col] = parts.map((n) => parseInt(n));
+  return { line, col };
+}
 
 type LineParser = (text: string, data: Embed) => void;
 
@@ -89,19 +116,15 @@ const lineParsers: { [key: string]: LineParser } = {
       tokens.push(matches[0]);
     }
 
-    let idx = 0;
-    while (idx + 2 < tokens.length) {
-      if (tokens[idx + 1] != "to") {
-        throw new Error("invalid ranges line");
+    while (tokens.length > 0) {
+      data.ranges.push(parseRange(tokens));
+      if (tokens.length > 0) {
+        if (tokens[0] == ",") {
+          tokens.shift();
+        } else {
+          throw new Error("range syntax error");
+        }
       }
-      data.ranges.push({
-        start: parseRangeEndToken(tokens[idx]),
-        end: parseRangeEndToken(tokens[idx + 2]),
-      });
-      if (idx + 3 < tokens.length && tokens[idx + 3] != ",") {
-        throw new Error("invalid ranges line");
-      }
-      idx += 4;
     }
   },
   join: (text: string, data: Embed) => {
