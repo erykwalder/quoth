@@ -42,6 +42,7 @@ export function findHeadingByPath(
   path: string[],
   headings: HeadingCache[]
 ): HeadingCache {
+  path = [...path]; // make non-destructive copy
   let level = 0;
   for (var i = 0; i < headings.length; i++) {
     if (headings[i].heading === path[0] && headings[i].level > level) {
