@@ -3,7 +3,6 @@ import { Range, Pos, PosRange, StringRange, WholeString } from "./range";
 export type Embed = {
   file?: string;
   heading?: string[];
-  block?: string;
   ranges?: Range[];
   join: string;
   show: EmbedOptions;
@@ -75,14 +74,6 @@ const lineParsers: { [key: string]: LineParser } = {
     }
     if (headings.length > 0) {
       data.heading = headings;
-    }
-  },
-  block: (text: string, data: Embed) => {
-    // Match: ^text
-    if (/^\^.+?$/.test(text)) {
-      data.block = text;
-    } else {
-      throw new Error("invalid block line");
     }
   },
   ranges: (text: string, data: Embed) => {

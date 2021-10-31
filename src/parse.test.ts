@@ -20,11 +20,6 @@ describe("parser", () => {
     expect(result.heading).toStrictEqual(["Lunar Cycles", "Waning"]);
   });
 
-  it("parses the block id", () => {
-    const result: Embed = parse("block: ^foobar1");
-    expect(result.block).toBe("^foobar1");
-  });
-
   it("parses a single number-based range", () => {
     const result: Embed = parse("ranges: 5:10 to 7:15");
     expect(result.ranges).toStrictEqual([
@@ -91,7 +86,6 @@ heading: #Lunar Cycles
   it("parses a whole block", () => {
     const text = `file: [[File Title]]
 heading: #Heading#21
-block: ^asdf
 ranges: 123:10 to 125:10, "doc" to "text", "start" to "end"
 join: ", "
 show: title
@@ -100,7 +94,6 @@ display: inline`;
     expect(result).toStrictEqual({
       file: "File Title",
       heading: ["Heading", "21"],
-      block: "^asdf",
       ranges: [
         new PosRange({ line: 123, col: 10 }, { line: 125, col: 10 }),
         new StringRange("doc", "text"),
