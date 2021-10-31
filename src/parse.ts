@@ -1,9 +1,9 @@
 import { Range, Pos, PosRange, StringRange, WholeString } from "./range";
 
 export type Embed = {
-  file?: string;
+  file: string;
   heading?: string[];
-  ranges?: Range[];
+  ranges: Range[];
   join: string;
   show: EmbedOptions;
   display: "embedded" | "inline";
@@ -138,6 +138,8 @@ export const parse = (text: string): Embed => {
   const settingRegex = /^(\w+):\s*(.+?)\s*$/gm;
 
   const embedData: Embed = {
+    file: "",
+    ranges: [],
     join: " ... ",
     show: {
       title: false,
