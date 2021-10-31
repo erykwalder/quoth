@@ -1,11 +1,12 @@
 import {
+  Keymap,
   MarkdownPostProcessorContext,
   MarkdownRenderer,
   Plugin,
-  TFile,
+  setIcon,
 } from "obsidian";
 import { findHeadingByPath, getHeadingContentRange } from "./headings";
-import { parse } from "./parse";
+import { Embed, parse } from "./parse";
 
 export async function quothProcessor(
   plugin: Plugin,
@@ -20,7 +21,7 @@ export async function quothProcessor(
       ctx.sourcePath
     );
     if (!file) {
-      return;
+      throw new Error(`File not found: ${embed.file}`);
     }
     let fileData = await plugin.app.vault.cachedRead(file);
     const headingCache = plugin.app.metadataCache.getFileCache(file).headings;
@@ -39,20 +40,25 @@ export async function quothProcessor(
       .map((range) => range.text(fileData))
       .join(embed.join);
     if (embed.display == "embedded") {
-      el = createEmbedWrapper(el, file, embed.heading);
+      el = createEmbedWrapper(el, ctx.sourcePath, embed, (p, s, n) =>
+        plugin.app.workspace.openLinkText(p, s, n)
+      );
     }
     MarkdownRenderer.renderMarkdown(quote, el, ctx.sourcePath, null);
-  } catch (e) {}
+  } catch (e) {
+    el.innerHTML = `<strong>Quoth Error: ${e}</strong>`;
+  }
 }
 
 function createEmbedWrapper(
   el: HTMLElement,
-  file: TFile,
-  heading?: string[]
+  sourcePath: string,
+  embed: Embed,
+  openLink: (p: string, s: string, n: boolean) => Promise<void>
 ): HTMLElement {
-  let path = [file.basename];
-  if (heading && heading.length > 0) {
-    path = path.concat(heading);
+  let path = [embed.file];
+  if (embed.heading && embed.heading.length > 0) {
+    path = path.concat(embed.heading);
   }
   const span = el.createSpan({
     cls: "internal-embed is-loaded",
@@ -76,5 +82,17 @@ function createEmbedWrapper(
       style: "width: 1px; height: 0.1px; margin-bottom: 0px;",
     },
   });
+
+  const mdLink = mdEmbed.createDiv({
+    cls: "markdown-embed-link",
+    attr: { "aria-label": "Open Link" },
+  });
+  setIcon(mdLink, "link", 20);
+  mdLink.addEventListener("click", async (e) => {
+    if (e.button === 0) {
+      await openLink(path.join("#"), sourcePath, Keymap.isModEvent(e));
+    }
+  });
+
   return mdPrevSec.createDiv();
 }
