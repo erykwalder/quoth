@@ -15,6 +15,12 @@ export default class QuothPlugin extends Plugin {
       id: "quoth-copy-reference",
       name: "Copy Reference",
       editorCheckCallback: copyEditorReference.bind(null, this),
+      hotkeys: [
+        {
+          modifiers: ["Shift", "Mod"],
+          key: "'",
+        },
+      ],
     });
   }
 }
