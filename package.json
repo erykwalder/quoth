@@ -10,7 +10,7 @@
   "scripts": {
     "dev": "esbuild src/main.ts --bundle --external:obsidian --external:electron --outdir=.  --target=es2016 --format=cjs --sourcemap=inline --watch",
     "build": "esbuild src/main.ts --bundle --external:obsidian --external:electron --outdir=.  --target=es2016 --format=cjs",
-    "test": "jest --watchAll"
+    "test": "jest --maxWorkers=1 --watchAll"
   },
   "devDependencies": {
     "@types/electron": "^1.6.10",
