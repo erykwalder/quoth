@@ -28,5 +28,5 @@ export function uniqueStrRange(text: string, search: string): string[] {
 
 export function isUnique(text: string, search: string): boolean {
   const idx = text.indexOf(search);
-  return idx > 0 && text.indexOf(search, idx + 1) === -1;
+  return idx >= 0 && text.indexOf(search, idx + 1) === -1;
 }
