@@ -6,6 +6,7 @@ import {
 } from "obsidian";
 import { parse } from "./parse";
 import { copyEditorReference } from "./copyReference";
+import { findHeadingByPath, getHeadingContentRange } from "./headings";
 
 export default class QuothPlugin extends Plugin {
   async onload() {
@@ -39,7 +40,19 @@ async function quothProcessor(
     if (!file) {
       return;
     }
-    const fileData = await this.app.vault.cachedRead(file);
+    let fileData = await this.app.vault.cachedRead(file);
+    const headingCache = this.app.metadataCache.getFileCache(file).headings;
+    if (embed.heading && headingCache && embed.heading.length > 0) {
+      const parent = findHeadingByPath(embed.heading, headingCache);
+      if (parent) {
+        const offsets = getHeadingContentRange(
+          parent,
+          headingCache,
+          fileData.length
+        );
+        fileData = fileData.slice(offsets.start, offsets.end);
+      }
+    }
     const quote = embed.ranges
       .map((range) => range.text(fileData))
       .join(embed.join);
