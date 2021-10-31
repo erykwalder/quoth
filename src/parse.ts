@@ -1,4 +1,4 @@
-import { Range, Pos, PosRange, StringRange } from "./range";
+import { Range, Pos, PosRange, StringRange, WholeString } from "./range";
 
 export type Embed = {
   file?: string;
@@ -24,8 +24,11 @@ function parseRange(tokens: string[]): Range {
   }
 }
 
-function parseStringRange(tokens: string[]): StringRange {
+function parseStringRange(tokens: string[]): Range {
   const start = JSON.parse(tokens.shift()) as string;
+  if (tokens.length === 0 || tokens[0] === ",") {
+    return new WholeString(start);
+  }
   if (tokens.shift() !== "to") {
     throw new Error("invalid ranges line");
   }

@@ -1,5 +1,5 @@
 import { parse, Embed } from "./parse";
-import { PosRange, StringRange } from "./range";
+import { PosRange, StringRange, WholeString } from "./range";
 
 describe("parser", () => {
   it("parses the file name", () => {
@@ -35,6 +35,11 @@ describe("parser", () => {
   it("parses a single string-based range", () => {
     const result: Embed = parse(`ranges: "Hello" to "world."`);
     expect(result.ranges).toStrictEqual([new StringRange("Hello", "world.")]);
+  });
+
+  it("parses a single whole-string range", () => {
+    const result: Embed = parse(`ranges: "Hello world."`);
+    expect(result.ranges).toStrictEqual([new WholeString("Hello world.")]);
   });
 
   it("parses multiple ranges", () => {
