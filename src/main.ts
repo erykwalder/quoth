@@ -66,7 +66,7 @@ function createEmbedWrapper(
   const mdPrevSec = mdPrev.createDiv({
     cls: "markdown-preview-sizer markdown-preview-section",
     attr: {
-      style: "padding-bottom: 0px; min-height: 99px;",
+      style: "padding-bottom: 0px",
     },
   });
   mdPrevSec.createDiv({
