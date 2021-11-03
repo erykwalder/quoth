@@ -16,46 +16,34 @@ export type EmbedOptions = {
   author: boolean;
 };
 
-function parseRange(tokens: string[]): Range {
-  const cur = tokens[0];
-  if (cur[0] === '"') {
-    return parseStringRange(tokens);
-  } else {
-    return parsePosRange(tokens);
-  }
-}
-
-function parseStringRange(tokens: string[]): Range {
-  const start = JSON.parse(tokens.shift()) as string;
-  if (tokens.length === 0 || tokens[0] === ",") {
-    return new WholeString(start);
-  }
-  if (tokens.shift() !== "to") {
-    throw new Error("invalid ranges line");
-  }
-  const end = JSON.parse(tokens.shift()) as string;
-  return new StringRange(start, end);
-}
-
-function parsePosRange(tokens: string[]): PosRange {
-  const start = parsePos(tokens.shift());
-  if (tokens.shift() !== "to") {
-    throw new Error("invalid ranges line");
-  }
-  const end = parsePos(tokens.shift());
-  return new PosRange(start, end);
-}
-
-function parsePos(token: string): Pos {
-  const parts = token.split(":");
-  if (parts.length !== 2) {
-    throw new Error("invalid ranges line");
-  }
-  const [line, col] = parts.map((n) => parseInt(n));
-  return { line, col };
-}
-
 type LineParser = (text: string, data: Embed) => void;
+
+export const parse = (text: string): Embed => {
+  const embedData: Embed = {
+    file: "",
+    ranges: [],
+    join: " ... ",
+    show: {
+      title: false,
+      author: false,
+    },
+    display: "embedded",
+  };
+
+  // Match: settingName: setting value
+  // g suffix: match all
+  // m suffix: ^ and $ work line by line, not on the whole string
+  const settingRegex = /^(\w+):\s*(.+?)\s*$/gm;
+  let matches: string[];
+  while ((matches = settingRegex.exec(text)) !== null) {
+    const [_, settingName, settingText] = matches;
+    if (settingName in lineParsers) {
+      lineParsers[settingName](settingText, embedData);
+    }
+  }
+
+  return embedData;
+};
 
 const lineParsers: { [key: string]: LineParser } = {
   file: (text: string, data: Embed) => {
@@ -133,30 +121,41 @@ const lineParsers: { [key: string]: LineParser } = {
   },
 };
 
-export const parse = (text: string): Embed => {
-  // Match: settingName: setting value
-  // g suffix: match all
-  // m suffix: ^ and $ work line by line, not on the whole string
-  const settingRegex = /^(\w+):\s*(.+?)\s*$/gm;
-
-  const embedData: Embed = {
-    file: "",
-    ranges: [],
-    join: " ... ",
-    show: {
-      title: false,
-      author: false,
-    },
-    display: "embedded",
-  };
-
-  let matches: string[];
-  while ((matches = settingRegex.exec(text)) !== null) {
-    const [_, settingName, settingText] = matches;
-    if (settingName in lineParsers) {
-      lineParsers[settingName](settingText, embedData);
-    }
+function parseRange(tokens: string[]): Range {
+  const cur = tokens[0];
+  if (cur[0] === '"') {
+    return parseStringRange(tokens);
+  } else {
+    return parsePosRange(tokens);
   }
+}
 
-  return embedData;
-};
+function parseStringRange(tokens: string[]): Range {
+  const start = JSON.parse(tokens.shift()) as string;
+  if (tokens.length === 0 || tokens[0] === ",") {
+    return new WholeString(start);
+  }
+  if (tokens.shift() !== "to") {
+    throw new Error("invalid ranges line");
+  }
+  const end = JSON.parse(tokens.shift()) as string;
+  return new StringRange(start, end);
+}
+
+function parsePosRange(tokens: string[]): PosRange {
+  const start = parsePos(tokens.shift());
+  if (tokens.shift() !== "to") {
+    throw new Error("invalid ranges line");
+  }
+  const end = parsePos(tokens.shift());
+  return new PosRange(start, end);
+}
+
+function parsePos(token: string): Pos {
+  const parts = token.split(":");
+  if (parts.length !== 2) {
+    throw new Error("invalid ranges line");
+  }
+  const [line, col] = parts.map((n) => parseInt(n));
+  return { line, col };
+}
