@@ -94,6 +94,7 @@ function renderQuote(
     );
   }
   MarkdownRenderer.renderMarkdown(quote.markdown, el, source, null);
+  renderOptions(el, show, quote);
 }
 
 function createEmbedWrapper(
@@ -141,6 +142,23 @@ function createEmbedWrapper(
   });
 
   return mdPrevSec.createDiv();
+}
+
+function renderOptions(
+  el: HTMLElement,
+  show: EmbedOptions,
+  quote: Quote
+): void {
+  if (!show.author && !show.title) {
+    return;
+  }
+  const source = el.createDiv({ cls: "quoth-source" });
+  if (show.author) {
+    source.createSpan({ cls: "quoth-author", text: quote.author });
+  }
+  if (show.title) {
+    source.createSpan({ cls: "quoth-title", text: quote.title });
+  }
 }
 
 function renderError(el: HTMLElement, error: Error): void {

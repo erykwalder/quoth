@@ -1,0 +1,12 @@
+.quoth-author {
+  font-weight: bold;
+}
+.quoth-title {
+  font-style: italic;
+}
+.quoth-source span:first-child::before {
+  content: "- ";
+}
+.quoth-author + .quoth-title::before {
+  content: ": ";
+}
