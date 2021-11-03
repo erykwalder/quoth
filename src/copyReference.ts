@@ -1,19 +1,19 @@
 import { clipboard } from "electron";
-import { Editor, Plugin, TFile } from "obsidian";
+import { App, Editor, TFile } from "obsidian";
 import { getHeadingContentRange, getParentHeadings } from "./headings";
 import { Range, PosRange, StringRange, WholeString } from "./range";
 import { isUnique, uniqueStrRange } from "./stringSearch";
 
 export function copyEditorReference(
-  plugin: Plugin,
+  app: App,
   checking: boolean,
   editor: Editor
 ) {
   if (!checking) {
-    const file = plugin.app.workspace.getActiveFile();
+    const file = app.workspace.getActiveFile();
     let posRange = PosRange.fromEditorSelection(editor.listSelections()[0]);
     const parents = getParentHeadings(
-      plugin.app.metadataCache.getFileCache(file).headings,
+      app.metadataCache.getFileCache(file).headings,
       posRange
     );
     let text = editor.getValue();
@@ -21,7 +21,7 @@ export function copyEditorReference(
       const lastParent = parents[parents.length - 1];
       const offsets = getHeadingContentRange(
         lastParent,
-        plugin.app.metadataCache.getFileCache(file).headings,
+        app.metadataCache.getFileCache(file).headings,
         text.length
       );
       text = text.slice(offsets.start, offsets.end);

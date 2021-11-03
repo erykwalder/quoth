@@ -12,7 +12,7 @@ export default class QuothPlugin extends Plugin {
     this.addCommand({
       id: "quoth-copy-reference",
       name: "Copy Reference",
-      editorCheckCallback: copyEditorReference.bind(null, this),
+      editorCheckCallback: copyEditorReference.bind(null, this.app),
       hotkeys: [
         {
           modifiers: ["Shift", "Mod"],
