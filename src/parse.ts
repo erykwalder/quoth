@@ -6,8 +6,10 @@ export type Embed = {
   ranges: Range[];
   join: string;
   show: EmbedOptions;
-  display: "embedded" | "inline";
+  display: EmbedDisplay;
 };
+
+export type EmbedDisplay = "embedded" | "inline";
 
 export type EmbedOptions = {
   title: boolean;

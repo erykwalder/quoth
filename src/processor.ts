@@ -1,64 +1,110 @@
 import {
+  App,
+  HeadingCache,
   Keymap,
   MarkdownPostProcessorContext,
   MarkdownRenderer,
-  Plugin,
   setIcon,
+  Workspace,
 } from "obsidian";
 import { findHeadingByPath, getHeadingContentRange } from "./headings";
-import { Embed, parse } from "./parse";
+import { Embed, EmbedDisplay, EmbedOptions, parse } from "./parse";
+
+interface Quote {
+  file: string;
+  headings: string[];
+  markdown: string;
+  title: string;
+  author?: string;
+}
 
 export async function quothProcessor(
-  plugin: Plugin,
+  app: App,
   source: string,
   el: HTMLElement,
   ctx: MarkdownPostProcessorContext
 ) {
   try {
     const embed = parse(source);
-    const file = plugin.app.metadataCache.getFirstLinkpathDest(
-      embed.file,
-      ctx.sourcePath
+    const quote = await assembleQuote(app, ctx.sourcePath, embed);
+    renderQuote(
+      app.workspace,
+      el,
+      ctx.sourcePath,
+      quote,
+      embed.display,
+      embed.show
     );
-    if (!file) {
-      throw new Error(`File not found: ${embed.file}`);
-    }
-    let fileData = await plugin.app.vault.cachedRead(file);
-    const headingCache = plugin.app.metadataCache.getFileCache(file).headings;
-    if (embed.heading && headingCache && embed.heading.length > 0) {
-      const parent = findHeadingByPath(embed.heading, headingCache);
-      if (parent) {
-        const offsets = getHeadingContentRange(
-          parent,
-          headingCache,
-          fileData.length
-        );
-        fileData = fileData.slice(offsets.start, offsets.end);
-      }
-    }
-    const quote = embed.ranges
-      .map((range) => range.text(fileData))
-      .join(embed.join);
-    if (embed.display == "embedded") {
-      el = createEmbedWrapper(el, ctx.sourcePath, embed, (p, s, n) =>
-        plugin.app.workspace.openLinkText(p, s, n)
-      );
-    }
-    MarkdownRenderer.renderMarkdown(quote, el, ctx.sourcePath, null);
   } catch (e) {
-    el.innerHTML = `<strong>Quoth Error: ${e}</strong>`;
+    renderError(el, e);
   }
+}
+
+async function assembleQuote(
+  app: App,
+  source: string,
+  embed: Embed
+): Promise<Quote> {
+  const file = app.metadataCache.getFirstLinkpathDest(embed.file, source);
+  if (!file) {
+    throw new Error(`File not found: ${embed.file}`);
+  }
+  const fileCache = app.metadataCache.getFileCache(file);
+  const text = headingContent(
+    await app.vault.cachedRead(file),
+    fileCache.headings,
+    embed.heading
+  );
+  const quote = embed.ranges.map((range) => range.text(text)).join(embed.join);
+  return {
+    file: embed.file,
+    headings: embed.heading || [],
+    markdown: quote,
+    title: file.basename,
+    author: fileCache.frontmatter?.author as string,
+  };
+}
+
+function headingContent(
+  data: string,
+  cache: HeadingCache[] | null,
+  path: string[] | null
+) {
+  if (cache && path?.length > 0) {
+    const parent = findHeadingByPath(path, cache);
+    if (parent) {
+      const offsets = getHeadingContentRange(parent, cache, data.length);
+      return data.slice(offsets.start, offsets.end);
+    }
+  }
+  return data;
+}
+
+function renderQuote(
+  workspace: Workspace,
+  el: HTMLElement,
+  source: string,
+  quote: Quote,
+  display: EmbedDisplay,
+  show: EmbedOptions
+) {
+  if (display == "embedded") {
+    el = createEmbedWrapper(el, source, quote, (p, s, n) =>
+      workspace.openLinkText(p, s, n)
+    );
+  }
+  MarkdownRenderer.renderMarkdown(quote.markdown, el, source, null);
 }
 
 function createEmbedWrapper(
   el: HTMLElement,
   sourcePath: string,
-  embed: Embed,
+  quote: Quote,
   openLink: (p: string, s: string, n: boolean) => Promise<void>
 ): HTMLElement {
-  let path = [embed.file];
-  if (embed.heading && embed.heading.length > 0) {
-    path = path.concat(embed.heading);
+  let path = [quote.file];
+  if (quote.headings.length > 0) {
+    path = path.concat(quote.headings);
   }
   const span = el.createSpan({
     cls: "internal-embed is-loaded",
@@ -95,4 +141,8 @@ function createEmbedWrapper(
   });
 
   return mdPrevSec.createDiv();
+}
+
+function renderError(el: HTMLElement, error: Error): void {
+  el.innerHTML = `<strong>Quoth Error: ${error}</strong>`;
 }

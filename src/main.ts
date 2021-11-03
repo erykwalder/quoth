@@ -6,7 +6,7 @@ export default class QuothPlugin extends Plugin {
   async onload() {
     this.registerMarkdownCodeBlockProcessor(
       "quoth",
-      quothProcessor.bind(null, this)
+      quothProcessor.bind(null, this.app)
     );
 
     this.addCommand({
