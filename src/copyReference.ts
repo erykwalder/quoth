@@ -18,7 +18,7 @@ export function copyEditorReference(
     );
     let text = editor.getValue();
     if (parents.length > 0) {
-      const lastParent = parents[parents.length - 1];
+      const lastParent = parents.last();
       const offsets = getHeadingContentRange(
         lastParent,
         app.metadataCache.getFileCache(file).headings,
