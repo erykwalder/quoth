@@ -1,4 +1,3 @@
-import { clipboard } from "electron";
 import { App, Editor, TFile } from "obsidian";
 import { getHeadingContentRange, getParentHeadings } from "./headings";
 import { Range, PosRange, StringRange, WholeString } from "./range";
@@ -30,7 +29,7 @@ export function copyEditorReference(
     }
     const range = getBestRange(text, editor.getSelection(), posRange);
 
-    clipboard.writeText(
+    navigator.clipboard.writeText(
       buildReference(
         file,
         parents.map((h) => h.heading),
