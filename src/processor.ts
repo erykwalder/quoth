@@ -55,7 +55,12 @@ async function assembleQuote(
     fileCache.headings,
     embed.heading
   );
-  const quote = embed.ranges.map((range) => range.text(text)).join(embed.join);
+  let quote: string;
+  if (embed.ranges.length > 0) {
+    quote = embed.ranges.map((range) => range.text(text)).join(embed.join);
+  } else {
+    quote = text;
+  }
   return {
     file: embed.file,
     headings: embed.heading || [],
