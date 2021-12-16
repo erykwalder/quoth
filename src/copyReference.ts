@@ -37,13 +37,11 @@ function copyPreviewReference(app: App, checking: boolean) {
     const selectedText = htmlToMarkdown(getRangeHTML(getSelectedRange()));
     const startOffset = text.indexOf(selectedText);
     const endOffset = startOffset + selectedText.length;
-    const startPos = editor.offsetToPos(startOffset);
-    const endPos = editor.offsetToPos(endOffset);
     copySelection(
       app,
       new PosRange(
-        { line: startPos.line, col: startPos.ch },
-        { line: endPos.line, col: endPos.ch }
+        editor.offsetToPos(startOffset),
+        editor.offsetToPos(endOffset)
       ),
       selectedText,
       text

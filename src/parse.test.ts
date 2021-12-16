@@ -23,7 +23,7 @@ describe("parser", () => {
   it("parses a single number-based range", () => {
     const result: Embed = parse("ranges: 5:10 to 7:15");
     expect(result.ranges).toStrictEqual([
-      new PosRange({ line: 5, col: 10 }, { line: 7, col: 15 }),
+      new PosRange({ line: 5, ch: 10 }, { line: 7, ch: 15 }),
     ]);
   });
 
@@ -95,7 +95,7 @@ display: inline`;
       file: "File Title",
       heading: ["Heading", "21"],
       ranges: [
-        new PosRange({ line: 123, col: 10 }, { line: 125, col: 10 }),
+        new PosRange({ line: 123, ch: 10 }, { line: 125, ch: 10 }),
         new StringRange("doc", "text"),
         new StringRange("start", "end"),
       ],

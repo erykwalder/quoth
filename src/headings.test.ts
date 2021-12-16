@@ -67,7 +67,7 @@ describe(getParentHeadings, () => {
     expect(
       getParentHeadings(
         null,
-        new PosRange({ line: 1, col: 0 }, { line: 1, col: 8 })
+        new PosRange({ line: 1, ch: 0 }, { line: 1, ch: 8 })
       )
     ).toStrictEqual([]);
   });
@@ -75,7 +75,7 @@ describe(getParentHeadings, () => {
     expect(
       getParentHeadings(
         exampleHeadings,
-        new PosRange({ line: 0, col: 0 }, { line: 0, col: 17 })
+        new PosRange({ line: 0, ch: 0 }, { line: 0, ch: 17 })
       )
     ).toStrictEqual([]);
   });
@@ -83,7 +83,7 @@ describe(getParentHeadings, () => {
     expect(
       getParentHeadings(
         exampleHeadings,
-        new PosRange({ line: 0, col: 0 }, { line: 2, col: 5 })
+        new PosRange({ line: 0, ch: 0 }, { line: 2, ch: 5 })
       )
     ).toStrictEqual([]);
   });
@@ -91,7 +91,7 @@ describe(getParentHeadings, () => {
     expect(
       getParentHeadings(
         exampleHeadings,
-        new PosRange({ line: 2, col: 0 }, { line: 2, col: 5 })
+        new PosRange({ line: 2, ch: 0 }, { line: 2, ch: 5 })
       )
     ).toStrictEqual([exampleHeadings[0]]);
   });
@@ -99,7 +99,7 @@ describe(getParentHeadings, () => {
     expect(
       getParentHeadings(
         exampleHeadings,
-        new PosRange({ line: 1, col: 0 }, { line: 2, col: 5 })
+        new PosRange({ line: 1, ch: 0 }, { line: 2, ch: 5 })
       )
     ).toStrictEqual([exampleHeadings[0]]);
   });
@@ -107,7 +107,7 @@ describe(getParentHeadings, () => {
     expect(
       getParentHeadings(
         exampleHeadings,
-        new PosRange({ line: 1, col: 0 }, { line: 4, col: 5 })
+        new PosRange({ line: 1, ch: 0 }, { line: 4, ch: 5 })
       )
     ).toStrictEqual([exampleHeadings[0]]);
   });
@@ -115,7 +115,7 @@ describe(getParentHeadings, () => {
     expect(
       getParentHeadings(
         exampleHeadings,
-        new PosRange({ line: 4, col: 0 }, { line: 4, col: 5 })
+        new PosRange({ line: 4, ch: 0 }, { line: 4, ch: 5 })
       )
     ).toStrictEqual([exampleHeadings[0], exampleHeadings[1]]);
   });
@@ -123,7 +123,7 @@ describe(getParentHeadings, () => {
     expect(
       getParentHeadings(
         exampleHeadings,
-        new PosRange({ line: 8, col: 0 }, { line: 8, col: 5 })
+        new PosRange({ line: 8, ch: 0 }, { line: 8, ch: 5 })
       )
     ).toStrictEqual([
       exampleHeadings[0],
@@ -135,7 +135,7 @@ describe(getParentHeadings, () => {
     expect(
       getParentHeadings(
         exampleHeadings,
-        new PosRange({ line: 3, col: 0 }, { line: 6, col: 5 })
+        new PosRange({ line: 3, ch: 0 }, { line: 6, ch: 5 })
       )
     ).toStrictEqual([exampleHeadings[0]]);
   });
@@ -143,7 +143,7 @@ describe(getParentHeadings, () => {
     expect(
       getParentHeadings(
         exampleHeadings,
-        new PosRange({ line: 7, col: 0 }, { line: 10, col: 5 })
+        new PosRange({ line: 7, ch: 0 }, { line: 10, ch: 5 })
       )
     ).toStrictEqual([exampleHeadings[0]]);
   });
@@ -151,7 +151,7 @@ describe(getParentHeadings, () => {
     expect(
       getParentHeadings(
         exampleHeadings,
-        new PosRange({ line: 10, col: 0 }, { line: 10, col: 5 })
+        new PosRange({ line: 10, ch: 0 }, { line: 10, ch: 5 })
       )
     ).toStrictEqual([exampleHeadings[0], exampleHeadings[4]]);
   });

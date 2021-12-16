@@ -1,4 +1,5 @@
-import { Range, Pos, PosRange, StringRange, WholeString } from "./range";
+import { EditorPosition } from "obsidian";
+import { Range, PosRange, StringRange, WholeString } from "./range";
 
 export type Embed = {
   file: string;
@@ -151,11 +152,11 @@ function parsePosRange(tokens: string[]): PosRange {
   return new PosRange(start, end);
 }
 
-function parsePos(token: string): Pos {
+function parsePos(token: string): EditorPosition {
   const parts = token.split(":");
   if (parts.length !== 2) {
     throw new Error("invalid ranges line");
   }
-  const [line, col] = parts.map((n) => parseInt(n));
-  return { line, col };
+  const [line, ch] = parts.map((n) => parseInt(n));
+  return { line, ch };
 }

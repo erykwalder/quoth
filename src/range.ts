@@ -1,4 +1,4 @@
-import { EditorSelection } from "obsidian";
+import { EditorPosition, EditorSelection } from "obsidian";
 import { indexOfLine } from "./stringSearch";
 
 export abstract class Range {
@@ -11,13 +11,13 @@ export abstract class Range {
 }
 
 export class PosRange extends Range {
-  constructor(readonly start: Pos, readonly end: Pos) {
+  constructor(readonly start: EditorPosition, readonly end: EditorPosition) {
     super();
   }
   indexes(doc: string): OffsetRange {
     return {
-      start: indexOfLine(doc, this.start.line) + this.start.col,
-      end: indexOfLine(doc, this.end.line) + this.end.col,
+      start: indexOfLine(doc, this.start.line) + this.start.ch,
+      end: indexOfLine(doc, this.end.line) + this.end.ch,
     };
   }
   toString(): string {
@@ -33,10 +33,7 @@ export class PosRange extends Range {
     ) {
       [start, end] = [end, start];
     }
-    return new PosRange(
-      { line: start.line, col: start.ch },
-      { line: end.line, col: end.ch }
-    );
+    return new PosRange(start, end);
   }
 }
 
@@ -73,11 +70,6 @@ export type OffsetRange = {
   end: number;
 };
 
-export type Pos = {
-  line: number;
-  col: number;
-};
-
-function posString(p: Pos): string {
-  return `${p.line}:${p.col}`;
+function posString(p: EditorPosition): string {
+  return `${p.line}:${p.ch}`;
 }
