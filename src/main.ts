@@ -1,18 +1,19 @@
 import { Plugin, PluginSettingTab, Setting } from "obsidian";
-import { copyReference } from "./copyReference";
-import { EmbedDisplay, EmbedOptions } from "./parse";
+import { copyReference, CopySettings } from "./copyReference";
+import { EmbedDisplay } from "./parse";
 import { quothProcessor } from "./processor";
 import { selectListener } from "./selection";
 
 interface PluginSettings {
-  defaultDisplay?: EmbedDisplay;
-  defaultShow: EmbedOptions;
+  copySettings: CopySettings;
 }
 
 const DEFAULT_SETTINGS: PluginSettings = {
-  defaultShow: {
-    title: false,
-    author: false,
+  copySettings: {
+    defaultShow: {
+      title: false,
+      author: false,
+    },
   },
 };
 
@@ -20,7 +21,7 @@ export default class QuothPlugin extends Plugin {
   settings: PluginSettings;
 
   async onload() {
-    this.loadSettings();
+    await this.loadSettings();
 
     this.addSettingTab(new QuothSettingTab(this));
 
@@ -32,7 +33,11 @@ export default class QuothPlugin extends Plugin {
     this.addCommand({
       id: "quoth-copy-reference",
       name: "Copy Reference",
-      checkCallback: copyReference.bind(null, this.app),
+      checkCallback: copyReference.bind(
+        null,
+        this.app,
+        this.settings.copySettings
+      ),
       hotkeys: [
         {
           modifiers: ["Shift", "Mod"],
@@ -45,7 +50,7 @@ export default class QuothPlugin extends Plugin {
   }
 
   async loadSettings() {
-    this.settings = Object.assign({}, DEFAULT_SETTINGS, await this.loadData());
+    this.settings = Object.assign({}, DEFAULT_SETTINGS, this.loadData());
   }
 
   async saveSettings() {
@@ -77,29 +82,30 @@ class QuothSettingTab extends PluginSettingTab {
     new Setting(containerEl).setName("Display Style:").addDropdown((drop) =>
       drop
         .addOptions({ null: "", embedded: "Embedded", inline: "Inline" })
-        .setValue(this.plugin.settings.defaultDisplay)
+        .setValue(this.plugin.settings.copySettings.defaultDisplay)
         .onChange(async (value) => {
           if (value == "null") {
-            delete this.plugin.settings.defaultDisplay;
+            delete this.plugin.settings.copySettings.defaultDisplay;
           } else {
-            this.plugin.settings.defaultDisplay = value as EmbedDisplay;
+            this.plugin.settings.copySettings.defaultDisplay =
+              value as EmbedDisplay;
           }
           await this.plugin.saveSettings();
         })
     );
     new Setting(containerEl).setName("Show Author:").addToggle((toggle) =>
       toggle
-        .setValue(this.plugin.settings.defaultShow.author)
+        .setValue(this.plugin.settings.copySettings.defaultShow.author)
         .onChange(async (value) => {
-          this.plugin.settings.defaultShow.author = value;
+          this.plugin.settings.copySettings.defaultShow.author = value;
           await this.plugin.saveSettings();
         })
     );
     new Setting(containerEl).setName("Show Title:").addToggle((toggle) =>
       toggle
-        .setValue(this.plugin.settings.defaultShow.title)
+        .setValue(this.plugin.settings.copySettings.defaultShow.title)
         .onChange(async (value) => {
-          this.plugin.settings.defaultShow.title = value;
+          this.plugin.settings.copySettings.defaultShow.title = value;
           await this.plugin.saveSettings();
         })
     );
