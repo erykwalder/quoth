@@ -9,4 +9,5 @@
 }
 .quoth-author + .quoth-title::before {
   content: ": ";
+  font-style: normal;
 }
