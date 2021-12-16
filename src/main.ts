@@ -1,6 +1,7 @@
 import { Plugin } from "obsidian";
-import { copyEditorReference } from "./copyReference";
+import { copyReference } from "./copyReference";
 import { quothProcessor } from "./processor";
+import { selectListener } from "./selection";
 
 export default class QuothPlugin extends Plugin {
   async onload() {
@@ -12,7 +13,7 @@ export default class QuothPlugin extends Plugin {
     this.addCommand({
       id: "quoth-copy-reference",
       name: "Copy Reference",
-      editorCheckCallback: copyEditorReference.bind(null, this.app),
+      checkCallback: copyReference.bind(null, this.app),
       hotkeys: [
         {
           modifiers: ["Shift", "Mod"],
@@ -20,5 +21,7 @@ export default class QuothPlugin extends Plugin {
         },
       ],
     });
+
+    this.registerDomEvent(document, "selectionchange", selectListener);
   }
 }

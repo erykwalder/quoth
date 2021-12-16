@@ -1,44 +1,89 @@
-import { App, Editor, TFile } from "obsidian";
+import { App, htmlToMarkdown, MarkdownView, TFile } from "obsidian";
 import { getHeadingContentRange, getParentHeadings } from "./headings";
 import { Range, PosRange, StringRange, WholeString } from "./range";
 import { isUnique, uniqueStrRange } from "./stringSearch";
+import getSelectedRange, { getRangeHTML, isTextSelected } from "./selection";
 
-export function copyEditorReference(
-  app: App,
-  checking: boolean,
-  editor: Editor
-) {
+export function copyReference(app: App, checking: boolean) {
+  const view = app.workspace.activeLeaf?.getViewState()?.type;
+  const mode = app.workspace.activeLeaf?.getViewState()?.state?.mode;
+
+  if (view === "markdown" && mode === "source") {
+    return copySourceReference(app, checking);
+  } else if (view === "markdown" && mode == "preview") {
+    return copyPreviewReference(app, checking);
+  }
+  return false;
+}
+
+function copySourceReference(app: App, checking: boolean) {
+  const editor = (app.workspace.activeLeaf.view as MarkdownView).editor;
   if (!checking) {
-    const file = app.workspace.getActiveFile();
-    let posRange = PosRange.fromEditorSelection(editor.listSelections()[0]);
-    const parents = getParentHeadings(
-      app.metadataCache.getFileCache(file).headings,
-      posRange
-    );
-    let text = editor.getValue();
-    if (parents.length > 0) {
-      const lastParent = parents.last();
-      const offsets = getHeadingContentRange(
-        lastParent,
-        app.metadataCache.getFileCache(file).headings,
-        text.length
-      );
-      text = text.slice(offsets.start, offsets.end);
-      posRange.start.line -= lastParent.position.start.line;
-      posRange.end.line -= lastParent.position.start.line;
-    }
-    const range = getBestRange(text, editor.getSelection(), posRange);
-
-    navigator.clipboard.writeText(
-      buildReference(
-        file,
-        parents.map((h) => h.heading),
-        range
-      )
+    copySelection(
+      app,
+      PosRange.fromEditorSelection(editor.listSelections()[0]),
+      editor.getSelection(),
+      editor.getValue()
     );
   }
 
   return editor.somethingSelected();
+}
+
+function copyPreviewReference(app: App, checking: boolean) {
+  if (!checking) {
+    const editor = (app.workspace.activeLeaf.view as MarkdownView).editor;
+    const text = editor.getValue();
+    const selectedText = htmlToMarkdown(getRangeHTML(getSelectedRange()));
+    const startOffset = text.indexOf(selectedText);
+    const endOffset = startOffset + selectedText.length;
+    const startPos = editor.offsetToPos(startOffset);
+    const endPos = editor.offsetToPos(endOffset);
+    copySelection(
+      app,
+      new PosRange(
+        { line: startPos.line, col: startPos.ch },
+        { line: endPos.line, col: endPos.ch }
+      ),
+      selectedText,
+      text
+    );
+  }
+
+  return isTextSelected();
+}
+
+function copySelection(
+  app: App,
+  posRange: PosRange,
+  selectedText: string,
+  text: string
+) {
+  const file = app.workspace.getActiveFile();
+  const parents = getParentHeadings(
+    app.metadataCache.getFileCache(file).headings,
+    posRange
+  );
+  if (parents.length > 0) {
+    const lastParent = parents.last();
+    const offsets = getHeadingContentRange(
+      lastParent,
+      app.metadataCache.getFileCache(file).headings,
+      text.length
+    );
+    text = text.slice(offsets.start, offsets.end);
+    posRange.start.line -= lastParent.position.start.line;
+    posRange.end.line -= lastParent.position.start.line;
+  }
+  const range = getBestRange(text, selectedText, posRange);
+
+  navigator.clipboard.writeText(
+    buildReference(
+      file,
+      parents.map((h) => h.heading),
+      range
+    )
+  );
 }
 
 function getBestRange(
