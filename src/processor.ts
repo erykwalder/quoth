@@ -98,6 +98,9 @@ function renderQuote(
       workspace.openLinkText(p, s, n)
     );
   }
+  if (quote.markdown.includes("```quoth")) {
+    throw new Error("Can not quote a quoth code block.");
+  }
   MarkdownRenderer.renderMarkdown(quote.markdown, el, source, null);
   renderOptions(el, show, quote);
 }

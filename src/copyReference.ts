@@ -1,4 +1,4 @@
-import { App, htmlToMarkdown, MarkdownView, TFile } from "obsidian";
+import { App, htmlToMarkdown, MarkdownView, Notice, TFile } from "obsidian";
 import { getHeadingContentRange, getParentHeadings } from "./headings";
 import { Range, PosRange, StringRange, WholeString } from "./range";
 import { isUnique, uniqueStrRange } from "./stringSearch";
@@ -18,10 +18,14 @@ export function copyReference(
   const view = app.workspace.activeLeaf?.getViewState()?.type;
   const mode = app.workspace.activeLeaf?.getViewState()?.state?.mode;
 
-  if (view === "markdown" && mode === "source") {
-    return copySourceReference(app, settings, checking);
-  } else if (view === "markdown" && mode == "preview") {
-    return copyPreviewReference(app, settings, checking);
+  try {
+    if (view === "markdown" && mode === "source") {
+      return copySourceReference(app, settings, checking);
+    } else if (view === "markdown" && mode == "preview") {
+      return copyPreviewReference(app, settings, checking);
+    }
+  } catch (e) {
+    new Notice(e.message, 3000);
   }
   return false;
 }
