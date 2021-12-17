@@ -170,5 +170,5 @@ function renderOptions(
 }
 
 function renderError(el: HTMLElement, error: Error): void {
-  el.innerHTML = `<strong>Quoth Error: ${error}</strong>`;
+  el.createEl("strong", { text: `Quoth block error: ${error.message}` });
 }
