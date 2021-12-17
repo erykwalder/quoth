@@ -15,13 +15,12 @@ export function copyReference(
   settings: CopySettings,
   checking: boolean
 ) {
-  const view = app.workspace.activeLeaf?.getViewState()?.type;
-  const mode = app.workspace.activeLeaf?.getViewState()?.state?.mode;
+  const mode = app.workspace.getActiveViewOfType(MarkdownView)?.getMode();
 
   try {
-    if (view === "markdown" && mode === "source") {
+    if (mode === "source") {
       return copySourceReference(app, settings, checking);
-    } else if (view === "markdown" && mode == "preview") {
+    } else if (mode == "preview") {
       return copyPreviewReference(app, settings, checking);
     }
   } catch (e) {
@@ -35,7 +34,7 @@ function copySourceReference(
   settings: CopySettings,
   checking: boolean
 ) {
-  const editor = (app.workspace.activeLeaf.view as MarkdownView).editor;
+  const editor = app.workspace.getActiveViewOfType(MarkdownView).editor;
   if (!checking) {
     copySelection(
       app,
@@ -55,7 +54,7 @@ function copyPreviewReference(
   checking: boolean
 ) {
   if (!checking) {
-    const editor = (app.workspace.activeLeaf.view as MarkdownView).editor;
+    const editor = app.workspace.getActiveViewOfType(MarkdownView).editor;
     const text = editor.getValue();
     const selectedText = htmlToMarkdown(getRangeHTML(getSelectedRange()));
     const startOffset = text.indexOf(selectedText);
