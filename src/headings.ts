@@ -9,7 +9,7 @@ export function getParentHeadings(
     return [];
   }
   const lastHeadingIdx = indexOfLastHeading(headings, range.end.line);
-  let parents: HeadingCache[] = [];
+  const parents: HeadingCache[] = [];
   let level = Infinity;
   for (let i = lastHeadingIdx; i >= 0; i--) {
     if (headings[i].level < level) {
@@ -44,7 +44,7 @@ export function findHeadingByPath(
 ): HeadingCache {
   path = [...path]; // make non-destructive copy
   let level = 0;
-  for (var i = 0; i < headings.length; i++) {
+  for (let i = 0; i < headings.length; i++) {
     if (headings[i].heading === path[0] && headings[i].level > level) {
       level = headings[i].level;
       path.shift();

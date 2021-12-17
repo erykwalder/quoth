@@ -37,7 +37,7 @@ export const parse = (text: string): Embed => {
   const settingRegex = /^(\w+):\s*(.+?)\s*$/gm;
   let matches: string[];
   while ((matches = settingRegex.exec(text)) !== null) {
-    const [_, settingName, settingText] = matches;
+    const [, settingName, settingText] = matches;
     if (settingName in lineParsers) {
       lineParsers[settingName](settingText, embedData);
     }
@@ -92,7 +92,7 @@ const lineParsers: { [key: string]: LineParser } = {
   },
   join: (text: string, data: Embed) => {
     // Match: "text"
-    if (/^\"([^"\\]|\\.)+\"$/.test(text)) {
+    if (/^"([^"\\]|\\.)+"$/.test(text)) {
       data.join = JSON.parse(text) as string;
     } else {
       throw new Error("invalid join line");

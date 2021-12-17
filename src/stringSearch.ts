@@ -1,14 +1,11 @@
 export function indexOfLine(text: string, line: number): number {
   let idx = -1;
-  for (let newLines = 0; true; newLines++) {
-    if (line == newLines) {
-      return idx + 1; // advance past newline character
-    }
+  for (let newLines = 0; newLines < line; newLines++) {
     if ((idx = text.indexOf("\n", idx + 1)) < 0) {
-      break;
+      return -1;
     }
   }
-  return -1;
+  return idx + 1;
 }
 
 export function uniqueStrRange(text: string, search: string): string[] {

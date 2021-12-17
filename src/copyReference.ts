@@ -148,7 +148,7 @@ function buildReference(
     ref += `display: ${settings.defaultDisplay}\n`;
   }
   if (settings.defaultShow.author || settings.defaultShow.title) {
-    let show: string[] = [];
+    const show: string[] = [];
     if (settings.defaultShow.author) {
       show.push("author");
     }

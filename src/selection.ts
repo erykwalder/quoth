@@ -8,7 +8,7 @@ export function isTextSelected(): boolean {
   return !getSelectedRange().collapsed;
 }
 
-export function selectListener(e: Event) {
+export function selectListener() {
   const sel = window.getSelection();
   if (sel.rangeCount > 0) {
     const range = window.getSelection().getRangeAt(0);
