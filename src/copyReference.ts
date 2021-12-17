@@ -112,6 +112,7 @@ function copySelection(
       range
     )
   );
+  new Notice("Reference copied!", 1500);
 }
 
 function getBestRange(
