@@ -45,6 +45,9 @@ async function assembleQuote(
   source: string,
   embed: Embed
 ): Promise<Quote> {
+  if (embed.file === "") {
+    throw new Error("File must be set in block");
+  }
   const file = app.metadataCache.getFirstLinkpathDest(embed.file, source);
   if (!file) {
     throw new Error(`File not found: ${embed.file}`);
