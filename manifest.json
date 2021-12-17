@@ -1,9 +1,9 @@
 {
   "id": "quoth",
   "name": "Quoth",
-  "version": "0.0.1",
+  "version": "0.1.0",
   "minAppVersion": "0.12.9",
-  "description": "Allow for more flexible file embedding.",
+  "description": "More flexible embedding.",
   "author": "Eric Rykwalder",
   "authorUrl": "https://github.com/erykwalder/quoth",
   "isDesktopOnly": false
