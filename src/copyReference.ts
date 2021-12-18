@@ -1,4 +1,11 @@
-import { App, htmlToMarkdown, MarkdownView, Notice, TFile } from "obsidian";
+import {
+  App,
+  Editor,
+  htmlToMarkdown,
+  MarkdownView,
+  Notice,
+  TFile,
+} from "obsidian";
 import { getHeadingContentRange, getParentHeadings } from "./headings";
 import { Range, PosRange, StringRange, WholeString } from "./range";
 import { isUnique, uniqueStrRange } from "./stringSearch";
@@ -10,109 +17,96 @@ export interface CopySettings {
   defaultShow: EmbedOptions;
 }
 
-export function copyReference(
+interface refBuilder {
+  app: App;
+  settings: CopySettings;
+  view: MarkdownView;
+  editor: Editor;
+  file: TFile;
+  posRange?: PosRange;
+  range?: Range;
+  headings?: string[];
+}
+
+export function checkCopyReference(
   app: App,
   settings: CopySettings,
   checking: boolean
-) {
-  const mode = app.workspace.getActiveViewOfType(MarkdownView)?.getMode();
+): boolean {
+  const view = app.workspace.getActiveViewOfType(MarkdownView);
 
+  if (!checking && view) {
+    copyReference({
+      app: app,
+      settings: settings,
+      view: view,
+      editor: view.editor,
+      file: view.file,
+    });
+  }
+
+  return (
+    (view?.getMode() === "source" && view.editor.somethingSelected()) ||
+    (view?.getMode() === "preview" && isTextSelected())
+  );
+}
+
+function copyReference(rb: refBuilder): void {
   try {
-    if (mode === "source") {
-      return copySourceReference(app, settings, checking);
-    } else if (mode == "preview") {
-      return copyPreviewReference(app, settings, checking);
+    if (rb.view.getMode() === "source") {
+      rb.posRange = getSourceRange(rb);
+    } else {
+      rb.posRange = getPreviewRange(rb);
     }
+
+    let text = rb.editor.getValue();
+
+    const parents = getParentHeadings(
+      rb.app.metadataCache.getFileCache(rb.file).headings,
+      rb.posRange
+    );
+    rb.headings = parents.map((h) => h.heading);
+    if (parents.length > 0) {
+      const lastParent = parents.last();
+      const offsets = getHeadingContentRange(
+        lastParent,
+        rb.app.metadataCache.getFileCache(rb.file).headings,
+        text.length
+      );
+      text = text.slice(offsets.start, offsets.end);
+      rb.posRange.start.line -= lastParent.position.start.line;
+      rb.posRange.end.line -= lastParent.position.start.line;
+    }
+
+    rb.range = getBestRange(
+      text,
+      rb.editor.getRange(rb.posRange.start, rb.posRange.end),
+      rb.posRange
+    );
+
+    navigator.clipboard.writeText(buildReference(rb));
+    new Notice("Reference copied!", 1500);
   } catch (e) {
     new Notice(e.message, 3000);
   }
-  return false;
 }
 
-function copySourceReference(
-  app: App,
-  settings: CopySettings,
-  checking: boolean
-) {
-  const editor = app.workspace.getActiveViewOfType(MarkdownView).editor;
-  if (!checking) {
-    copySelection(
-      app,
-      settings,
-      PosRange.fromEditorSelection(editor.listSelections()[0]),
-      editor.getSelection(),
-      editor.getValue()
+function getSourceRange(rb: refBuilder): PosRange {
+  return PosRange.fromEditorSelection(rb.editor.listSelections()[0]);
+}
+
+function getPreviewRange(rb: refBuilder): PosRange {
+  const selectedText = htmlToMarkdown(getRangeHTML(getSelectedRange()));
+  const offset = rb.editor.getValue().indexOf(selectedText);
+  if (offset == -1) {
+    throw new Error(
+      "Unable to locate markdown from preview, try copying from source mode."
     );
   }
-
-  return editor.somethingSelected();
-}
-
-function copyPreviewReference(
-  app: App,
-  settings: CopySettings,
-  checking: boolean
-) {
-  if (!checking) {
-    const editor = app.workspace.getActiveViewOfType(MarkdownView).editor;
-    const text = editor.getValue();
-    const selectedText = htmlToMarkdown(getRangeHTML(getSelectedRange()));
-    const startOffset = text.indexOf(selectedText);
-    if (startOffset == -1) {
-      throw new Error(
-        "Unable to locate markdown from preview, try copying from source mode."
-      );
-    }
-    const endOffset = startOffset + selectedText.length;
-    copySelection(
-      app,
-      settings,
-      new PosRange(
-        editor.offsetToPos(startOffset),
-        editor.offsetToPos(endOffset)
-      ),
-      selectedText,
-      text
-    );
-  }
-
-  return isTextSelected();
-}
-
-function copySelection(
-  app: App,
-  settings: CopySettings,
-  posRange: PosRange,
-  selectedText: string,
-  text: string
-) {
-  const file = app.workspace.getActiveFile();
-  const parents = getParentHeadings(
-    app.metadataCache.getFileCache(file).headings,
-    posRange
+  return new PosRange(
+    rb.editor.offsetToPos(offset),
+    rb.editor.offsetToPos(offset + selectedText.length)
   );
-  if (parents.length > 0) {
-    const lastParent = parents.last();
-    const offsets = getHeadingContentRange(
-      lastParent,
-      app.metadataCache.getFileCache(file).headings,
-      text.length
-    );
-    text = text.slice(offsets.start, offsets.end);
-    posRange.start.line -= lastParent.position.start.line;
-    posRange.end.line -= lastParent.position.start.line;
-  }
-  const range = getBestRange(text, selectedText, posRange);
-
-  navigator.clipboard.writeText(
-    buildReference(
-      settings,
-      file,
-      parents.map((h) => h.heading),
-      range
-    )
-  );
-  new Notice("Reference copied!", 1500);
 }
 
 function getBestRange(
@@ -132,27 +126,22 @@ function getBestRange(
   }
 }
 
-function buildReference(
-  settings: CopySettings,
-  file: TFile,
-  parents: string[],
-  range: Range
-): string {
+function buildReference(rb: refBuilder): string {
   let ref = "```quoth\n";
-  ref += `file: [[${file.path}]]\n`;
-  if (parents.length > 0) {
-    ref += `heading: #${parents.join("#")}\n`;
+  ref += `file: [[${rb.file.path}]]\n`;
+  if (rb?.headings.length > 0) {
+    ref += `heading: #${rb.headings.join("#")}\n`;
   }
-  ref += `ranges: ${range.toString()}\n`;
-  if (settings.defaultDisplay) {
-    ref += `display: ${settings.defaultDisplay}\n`;
+  ref += `ranges: ${rb.range.toString()}\n`;
+  if (rb.settings.defaultDisplay) {
+    ref += `display: ${rb.settings.defaultDisplay}\n`;
   }
-  if (settings.defaultShow.author || settings.defaultShow.title) {
+  if (rb.settings.defaultShow.author || rb.settings.defaultShow.title) {
     const show: string[] = [];
-    if (settings.defaultShow.author) {
+    if (rb.settings.defaultShow.author) {
       show.push("author");
     }
-    if (settings.defaultShow.title) {
+    if (rb.settings.defaultShow.title) {
       show.push("title");
     }
     ref += `show: ${show.join(", ")}\n`;

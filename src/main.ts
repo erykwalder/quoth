@@ -1,5 +1,5 @@
 import { Plugin, PluginSettingTab, Setting } from "obsidian";
-import { copyReference, CopySettings } from "./copyReference";
+import { checkCopyReference, CopySettings } from "./copyReference";
 import { EmbedDisplay } from "./parse";
 import { quothProcessor } from "./processor";
 import { selectListener } from "./selection";
@@ -33,7 +33,7 @@ export default class QuothPlugin extends Plugin {
     this.addCommand({
       id: "quoth-copy-reference",
       name: "Copy Reference",
-      checkCallback: copyReference.bind(
+      checkCallback: checkCopyReference.bind(
         null,
         this.app,
         this.settings.copySettings
