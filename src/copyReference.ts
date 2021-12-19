@@ -60,6 +60,7 @@ function copyReference(rb: refBuilder): void {
     }
 
     let text = rb.editor.getValue();
+    const selectedText = rb.editor.getRange(rb.posRange.start, rb.posRange.end);
 
     const parents = getParentHeadings(
       rb.app.metadataCache.getFileCache(rb.file).headings,
@@ -78,11 +79,7 @@ function copyReference(rb: refBuilder): void {
       rb.posRange.end.line -= lastParent.position.start.line;
     }
 
-    rb.range = getBestRange(
-      text,
-      rb.editor.getRange(rb.posRange.start, rb.posRange.end),
-      rb.posRange
-    );
+    rb.range = getBestRange(text, selectedText, rb.posRange);
 
     navigator.clipboard.writeText(buildReference(rb));
     new Notice("Reference copied!", 1500);
