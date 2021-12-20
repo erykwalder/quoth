@@ -1,13 +1,13 @@
 import {
   App,
-  HeadingCache,
+  CachedMetadata,
   Keymap,
   MarkdownPostProcessorContext,
   MarkdownRenderer,
+  resolveSubpath,
   setIcon,
   Workspace,
 } from "obsidian";
-import { findHeadingByPath, getHeadingContentRange } from "./headings";
 import { Embed, EmbedDisplay, EmbedOptions, parse } from "./parse";
 
 interface Quote {
@@ -55,7 +55,7 @@ async function assembleQuote(
   const fileCache = app.metadataCache.getFileCache(file);
   const text = headingContent(
     await app.vault.cachedRead(file),
-    fileCache.headings,
+    fileCache,
     embed.heading
   );
   let quote: string;
@@ -75,14 +75,15 @@ async function assembleQuote(
 
 function headingContent(
   data: string,
-  cache: HeadingCache[] | null,
+  cache: CachedMetadata,
   path: string[] | null
 ) {
-  if (cache && path?.length > 0) {
-    const parent = findHeadingByPath(path, cache);
-    if (parent) {
-      const offsets = getHeadingContentRange(parent, cache, data.length);
-      return data.slice(offsets.start, offsets.end);
+  if (path?.length > 0) {
+    const pathResult = resolveSubpath(cache, `#${path.join("#")}`);
+    if (pathResult) {
+      return data.slice(pathResult.start.offset, pathResult.end?.offset);
+    } else {
+      throw new Error(`heading path not found: #${path.join("#")}`);
     }
   }
   return data;

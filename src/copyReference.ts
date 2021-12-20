@@ -4,9 +4,10 @@ import {
   htmlToMarkdown,
   MarkdownView,
   Notice,
+  resolveSubpath,
   TFile,
 } from "obsidian";
-import { getHeadingContentRange, getParentHeadings } from "./headings";
+import { getParentHeadings } from "./headings";
 import { Range, PosRange, StringRange, WholeString } from "./range";
 import { isUnique, uniqueStrRange } from "./stringSearch";
 import getSelectedRange, { getRangeHTML, isTextSelected } from "./selection";
@@ -62,21 +63,14 @@ function copyReference(rb: refBuilder): void {
     let text = rb.editor.getValue();
     const selectedText = rb.editor.getRange(rb.posRange.start, rb.posRange.end);
 
-    const parents = getParentHeadings(
-      rb.app.metadataCache.getFileCache(rb.file).headings,
-      rb.posRange
-    );
+    const fileCache = rb.app.metadataCache.getFileCache(rb.file);
+    const parents = getParentHeadings(fileCache.headings, rb.posRange);
     rb.headings = parents.map((h) => h.heading);
     if (parents.length > 0) {
-      const lastParent = parents.last();
-      const offsets = getHeadingContentRange(
-        lastParent,
-        rb.app.metadataCache.getFileCache(rb.file).headings,
-        text.length
-      );
-      text = text.slice(offsets.start, offsets.end);
-      rb.posRange.start.line -= lastParent.position.start.line;
-      rb.posRange.end.line -= lastParent.position.start.line;
+      const subPath = resolveSubpath(fileCache, `#${rb.headings.join("#")}`);
+      text = text.slice(subPath.start.offset, subPath.end?.offset);
+      rb.posRange.start.line -= subPath.start.line;
+      rb.posRange.end.line -= subPath.start.line;
     }
 
     rb.range = getBestRange(text, selectedText, rb.posRange);

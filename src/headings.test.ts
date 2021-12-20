@@ -1,12 +1,9 @@
 import { HeadingCache } from "obsidian";
-import {
-  getParentHeadings,
-  getHeadingContentRange,
-  findHeadingByPath,
-} from "./headings";
+import { getParentHeadings } from "./headings";
 import { PosRange } from "./range";
 
-const exampleText = `Pre-heading text.
+/** Example Text
+`Pre-heading text.
 # First Level
 TextA
 ## Second Level One
@@ -17,7 +14,7 @@ TextC
 TextD
 ## Second Level Three
 Text E
-`;
+`;*/
 
 const exampleHeadings: HeadingCache[] = [
   {
@@ -154,104 +151,5 @@ describe(getParentHeadings, () => {
         new PosRange({ line: 10, ch: 0 }, { line: 10, ch: 5 })
       )
     ).toStrictEqual([exampleHeadings[0], exampleHeadings[4]]);
-  });
-});
-
-describe(getHeadingContentRange, () => {
-  it("returns the offset range of the content under a heading", () => {
-    expect(
-      getHeadingContentRange(
-        exampleHeadings[0],
-        exampleHeadings,
-        exampleText.length
-      )
-    ).toStrictEqual({
-      start: exampleHeadings[0].position.start.offset,
-      end: exampleText.length,
-    });
-    expect(
-      getHeadingContentRange(
-        exampleHeadings[1],
-        exampleHeadings,
-        exampleText.length
-      )
-    ).toStrictEqual({
-      start: exampleHeadings[1].position.start.offset,
-      end: exampleHeadings[2].position.start.offset - 1,
-    });
-    expect(
-      getHeadingContentRange(
-        exampleHeadings[2],
-        exampleHeadings,
-        exampleText.length
-      )
-    ).toStrictEqual({
-      start: exampleHeadings[2].position.start.offset,
-      end: exampleHeadings[4].position.start.offset - 1,
-    });
-    expect(
-      getHeadingContentRange(
-        exampleHeadings[3],
-        exampleHeadings,
-        exampleText.length
-      )
-    ).toStrictEqual({
-      start: exampleHeadings[3].position.start.offset,
-      end: exampleHeadings[4].position.start.offset - 1,
-    });
-    expect(
-      getHeadingContentRange(
-        exampleHeadings[4],
-        exampleHeadings,
-        exampleText.length
-      )
-    ).toStrictEqual({
-      start: exampleHeadings[4].position.start.offset,
-      end: exampleText.length,
-    });
-  });
-});
-
-describe(findHeadingByPath, () => {
-  it("returns the heading at the specified path", () => {
-    expect(findHeadingByPath(["First Level"], exampleHeadings)).toStrictEqual(
-      exampleHeadings[0]
-    );
-    expect(
-      findHeadingByPath(["First Level", "Second Level One"], exampleHeadings)
-    ).toStrictEqual(exampleHeadings[1]);
-    expect(
-      findHeadingByPath(["First Level", "Second Level Two"], exampleHeadings)
-    ).toStrictEqual(exampleHeadings[2]);
-    expect(
-      findHeadingByPath(["Second Level Two"], exampleHeadings)
-    ).toStrictEqual(exampleHeadings[2]);
-    expect(
-      findHeadingByPath(["Third Level One"], exampleHeadings)
-    ).toStrictEqual(exampleHeadings[3]);
-    expect(
-      findHeadingByPath(["First Level", "Third Level One"], exampleHeadings)
-    ).toStrictEqual(exampleHeadings[3]);
-    expect(
-      findHeadingByPath(
-        ["Second Level Two", "Third Level One"],
-        exampleHeadings
-      )
-    ).toStrictEqual(exampleHeadings[3]);
-    expect(
-      findHeadingByPath(
-        ["First Level", "Second Level Two", "Third Level One"],
-        exampleHeadings
-      )
-    ).toStrictEqual(exampleHeadings[3]);
-  });
-  it("throws if heading is not found", () => {
-    expect(() => findHeadingByPath(["DNE"], exampleHeadings)).toThrow();
-    expect(() =>
-      findHeadingByPath(
-        ["Second Level One", "Third Level One"],
-        exampleHeadings
-      )
-    ).toThrow();
   });
 });
