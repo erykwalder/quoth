@@ -1,4 +1,5 @@
 import { Plugin, PluginSettingTab, Setting } from "obsidian";
+import addIcons from "./addIcons";
 import { checkCopyReference, CopySettings } from "./copyReference";
 import { EmbedDisplay } from "./parse";
 import { quothProcessor } from "./processor";
@@ -23,6 +24,8 @@ export default class QuothPlugin extends Plugin {
   async onload() {
     await this.loadSettings();
 
+    addIcons();
+
     this.addSettingTab(new QuothSettingTab(this));
 
     this.registerMarkdownCodeBlockProcessor(
@@ -44,6 +47,7 @@ export default class QuothPlugin extends Plugin {
           key: "'",
         },
       ],
+      icon: "quoth-copy",
     });
 
     this.registerDomEvent(document, "selectionchange", selectListener);
