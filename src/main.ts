@@ -1,6 +1,10 @@
-import { Plugin, PluginSettingTab, Setting } from "obsidian";
+import { Platform, Plugin, PluginSettingTab, Setting } from "obsidian";
 import addIcons from "./addIcons";
-import { checkCopyReference, CopySettings } from "./copyReference";
+import {
+  checkCopyReference,
+  copyButtonListener,
+  CopySettings,
+} from "./copyReference";
 import { EmbedDisplay } from "./parse";
 import { quothProcessor } from "./processor";
 import { selectListener } from "./selection";
@@ -15,6 +19,7 @@ const DEFAULT_SETTINGS: PluginSettings = {
       title: false,
       author: false,
     },
+    showMobileButton: false,
   },
 };
 
@@ -51,6 +56,11 @@ export default class QuothPlugin extends Plugin {
     });
 
     this.registerDomEvent(document, "selectionchange", selectListener);
+    this.registerDomEvent(
+      document,
+      "selectionchange",
+      copyButtonListener.bind(null, this.app, this.settings.copySettings)
+    );
   }
 
   async loadSettings() {
@@ -76,6 +86,23 @@ class QuothSettingTab extends PluginSettingTab {
     containerEl.empty();
 
     containerEl.createEl("h2", { text: "Quoth Settings" });
+
+    if (Platform.isMobile) {
+      new Setting(containerEl)
+        .setName("Show Copy Button")
+        .setDesc(
+          "Mobile only. " +
+            "When a selection is made in preview mode, " +
+            "a button to copy will appear in the bottom right."
+        )
+        .addToggle((toggle) => {
+          toggle.onChange(async (value) => {
+            this.plugin.settings.copySettings.showMobileButton = value;
+            await this.plugin.saveSettings();
+          });
+        });
+    }
+
     containerEl.createEl("h4", {
       text: "Default copy reference options",
     });

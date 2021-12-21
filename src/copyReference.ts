@@ -3,7 +3,9 @@ import {
   Editor,
   MarkdownView,
   Notice,
+  Platform,
   resolveSubpath,
+  setIcon,
   TFile,
 } from "obsidian";
 import { getParentHeadings } from "./headings";
@@ -16,6 +18,7 @@ import { EmbedDisplay, EmbedOptions } from "./parse";
 export interface CopySettings {
   defaultDisplay?: EmbedDisplay;
   defaultShow: EmbedOptions;
+  showMobileButton: boolean;
 }
 
 interface refBuilder {
@@ -27,6 +30,28 @@ interface refBuilder {
   posRange?: PosRange;
   range?: Range;
   headings?: string[];
+}
+
+export function copyButtonListener(app: App, settings: CopySettings): void {
+  if (!Platform.isMobile || !settings.showMobileButton) {
+    return;
+  }
+  const view = app.workspace.getActiveViewOfType(MarkdownView);
+  if (view?.getMode() === "preview" && isTextSelected()) {
+    if (!view.previewMode.containerEl.querySelector(".quoth-copy-button")) {
+      const button =
+        view.previewMode.containerEl.createDiv("quoth-copy-button");
+      setIcon(button, "quoth-copy", 30);
+      button.addEventListener("click", () => {
+        checkCopyReference(app, settings, false);
+        button.remove();
+      });
+    }
+  } else if (view?.getMode() === "preview") {
+    view.previewMode.containerEl
+      .querySelectorAll(".quoth-copy-button")
+      .forEach((b) => b.remove());
+  }
 }
 
 export function checkCopyReference(
