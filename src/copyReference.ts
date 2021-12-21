@@ -9,7 +9,8 @@ import {
 import { getParentHeadings } from "./headings";
 import { Range, PosRange, StringRange, WholeString } from "./range";
 import { isUnique, uniqueStrRange } from "./stringSearch";
-import getSelectedRange, { getRangeRegex, isTextSelected } from "./selection";
+import getSelectedRange, { isTextSelected } from "./selection";
+import { rangeRegex } from "./rangeRegex";
 import { EmbedDisplay, EmbedOptions } from "./parse";
 
 export interface CopySettings {
@@ -86,7 +87,7 @@ function getSourceRange(rb: refBuilder): PosRange {
 }
 
 function getPreviewRange(rb: refBuilder): PosRange {
-  const selectedRegex = getRangeRegex(getSelectedRange());
+  const selectedRegex = rangeRegex(getSelectedRange());
   const match = rb.editor.getValue().match(selectedRegex);
   if (!match) {
     throw new Error(
