@@ -1,7 +1,6 @@
 import {
   App,
   Editor,
-  htmlToMarkdown,
   MarkdownView,
   Notice,
   resolveSubpath,
@@ -10,7 +9,7 @@ import {
 import { getParentHeadings } from "./headings";
 import { Range, PosRange, StringRange, WholeString } from "./range";
 import { isUnique, uniqueStrRange } from "./stringSearch";
-import getSelectedRange, { getRangeHTML, isTextSelected } from "./selection";
+import getSelectedRange, { getRangeRegex, isTextSelected } from "./selection";
 import { EmbedDisplay, EmbedOptions } from "./parse";
 
 export interface CopySettings {
@@ -87,16 +86,16 @@ function getSourceRange(rb: refBuilder): PosRange {
 }
 
 function getPreviewRange(rb: refBuilder): PosRange {
-  const selectedText = htmlToMarkdown(getRangeHTML(getSelectedRange()));
-  const offset = rb.editor.getValue().indexOf(selectedText);
-  if (offset == -1) {
+  const selectedRegex = getRangeRegex(getSelectedRange());
+  const match = rb.editor.getValue().match(selectedRegex);
+  if (!match) {
     throw new Error(
       "Unable to locate markdown from preview, try copying from source mode."
     );
   }
   return new PosRange(
-    rb.editor.offsetToPos(offset),
-    rb.editor.offsetToPos(offset + selectedText.length)
+    rb.editor.offsetToPos(match.index),
+    rb.editor.offsetToPos(match.index + match[0].length)
   );
 }
 
