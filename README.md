@@ -50,5 +50,3 @@ There are currently some limitations to the current implementation:
   reconstructed. Things like footnotes are not currently handled.
 - The embedded content cannot contain another quoth code block, because that
   could lead to infinite recursion.
-- It was not designed for live mode, so while some functionality does seem to work
-  there may be bugs.
