@@ -1,6 +1,6 @@
 import { Range } from "./range";
 
-const blockquoteMarkdown = ["    ", "\t", ">"];
+const blockquoteMarkdown = ["    ", "\t", "> ", ">\t", ">"];
 const listMarkdown = /^(\d+\.|-|\+|\*)( |\t)/;
 const textMarkdown = ["**", "__", "~~", "==", "*", "_", "`"];
 
