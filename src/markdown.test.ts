@@ -1,4 +1,4 @@
-import { extractRangeWithContext } from "./markdown";
+import { extractRangeWithContext, normalizeMarkdown } from "./markdown";
 import { WholeString } from "./range";
 
 Array.prototype.last = function (): unknown {
@@ -9,9 +9,9 @@ Array.prototype.last = function (): unknown {
 };
 
 // text, matched range, result
-type testCase = [string, string, string];
+type extractTest = [string, string, string];
 
-function testExtract(cases: testCase[]) {
+function testExtract(cases: extractTest[]) {
   cases.forEach((c) => {
     expect(extractRangeWithContext(c[0], new WholeString(c[1]))).toBe(c[2]);
   });
@@ -85,6 +85,58 @@ describe(extractRangeWithContext, () => {
       ["> * blockquote *italic list*", "list", "> * *list*"],
       ["**bold** *italic* **bold2 *bolditalic***", "bold2", "**bold2**"],
       ["**bold** *italic* ***bolditalic***", "bolditalic", "***bolditalic***"],
+    ]);
+  });
+});
+
+// input, output
+type normalizeTest = [string, string];
+
+function testNormalize(cases: normalizeTest[]) {
+  cases.forEach((c) => {
+    expect(normalizeMarkdown(c[0])).toBe(c[1]);
+  });
+}
+
+describe(normalizeMarkdown, () => {
+  it("removes list bullets for single lines", () => {
+    testNormalize([
+      ["1. Testing", "Testing"],
+      ["29. Testing", "Testing"],
+      ["- Testing", "Testing"],
+      ["+ Testing", "Testing"],
+      ["* Testing", "Testing"],
+    ]);
+  });
+
+  it("leaves list bullets for multiple lines", () => {
+    testNormalize([
+      ["1. Testing1\n2. Testing2", "1. Testing1\n2. Testing2"],
+      ["29. Testing1\n30. Testing2", "29. Testing1\n30. Testing2"],
+      ["- Testing1\n- Testing2", "- Testing1\n- Testing2"],
+      ["+ Testing1\n+ Testing2", "+ Testing1\n+ Testing2"],
+      ["* Testing1\n* Testing2", "* Testing1\n* Testing2"],
+    ]);
+  });
+
+  it("removes redundant blockquotes", () => {
+    testNormalize([
+      [`> Testing`, "Testing"],
+      ["> Testing1\n> Testing2", "Testing1\nTesting2"],
+      ["> Testing1\n> Testing2\n> Testing3", "Testing1\nTesting2\nTesting3"],
+      ["> Testing1\n> > Testing2", "Testing1\n> Testing2"],
+      [
+        "> > Testing1\n> Testing2\n> > Testing3",
+        "> Testing1\nTesting2\n> Testing3",
+      ],
+    ]);
+  });
+
+  it("handles both lists and blockquotes", () => {
+    testNormalize([
+      [`> 1. Testing`, "Testing"],
+      [`> + Testing`, "Testing"],
+      [`> 1. Testing1\n> 2. Testing2`, "1. Testing1\n2. Testing2"],
     ]);
   });
 });
