@@ -4,10 +4,6 @@ import { indexOfLine } from "./stringSearch";
 export abstract class Range {
   abstract indexes(doc: string): OffsetRange;
   abstract toString(): string;
-  text(doc: string): string {
-    const { start, end } = this.indexes(doc);
-    return doc.slice(start, end);
-  }
 }
 
 export class PosRange extends Range {
@@ -43,7 +39,13 @@ export class StringRange extends Range {
   }
   indexes(doc: string): OffsetRange {
     const start = doc.indexOf(this.start);
+    if (start === -1) {
+      throw new Error(`Could not find ${JSON.stringify(this.start)} in file`);
+    }
     const end = doc.indexOf(this.end, start) + this.end.length;
+    if (end === this.end.length - 1) {
+      throw new Error(`Could not find ${JSON.stringify(this.end)} in file`);
+    }
     return { start, end };
   }
   toString(): string {
@@ -57,6 +59,9 @@ export class WholeString extends Range {
   }
   indexes(doc: string): OffsetRange {
     const start = doc.indexOf(this.str);
+    if (start === -1) {
+      throw new Error(`Could not find ${JSON.stringify(this.str)} in file`);
+    }
     const end = start + this.str.length;
     return { start, end };
   }

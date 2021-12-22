@@ -8,6 +8,7 @@ import {
   setIcon,
   Workspace,
 } from "obsidian";
+import { extractRangeWithContext, normalizeMarkdown } from "./markdown";
 import { Embed, EmbedDisplay, EmbedOptions, parse } from "./parse";
 
 interface Quote {
@@ -60,7 +61,9 @@ async function assembleQuote(
   );
   let quote: string;
   if (embed.ranges.length > 0) {
-    quote = embed.ranges.map((range) => range.text(text)).join(embed.join);
+    quote = normalizeMarkdown(
+      embed.ranges.map((r) => extractRangeWithContext(text, r)).join(embed.join)
+    );
   } else {
     quote = text;
   }

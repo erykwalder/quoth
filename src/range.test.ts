@@ -9,11 +9,6 @@ describe(PosRange, () => {
       expect(range.indexes(text)).toStrictEqual({ start: 1, end: 7 });
     });
   });
-  describe("text", () => {
-    it("slices range from string", () => {
-      expect(range.text(text)).toBe("ello\nw");
-    });
-  });
   describe("toString", () => {
     it("outputs in a parseable line:ch to line:ch format", () => {
       expect(range.toString()).toBe("0:1 to 1:1");
@@ -26,11 +21,6 @@ describe(StringRange, () => {
   describe("indexes", () => {
     it("locates indexes in string", () => {
       expect(range.indexes(text)).toStrictEqual({ start: 1, end: 9 });
-    });
-  });
-  describe("text", () => {
-    it("slices range from string", () => {
-      expect(range.text(text)).toBe("ello\nwor");
     });
   });
   describe("toString", () => {

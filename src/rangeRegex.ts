@@ -10,6 +10,7 @@ export function rangeRegex(range: Range): RegExp {
     "ms"
   );
 }
+
 function getRangePrefix(range: Range): string {
   let prefix = "";
   if (range.startOffset === 0) {
@@ -36,6 +37,7 @@ function getRangePrefix(range: Range): string {
     return "";
   }
 }
+
 function getRangeSuffix(range: Range): string {
   let suffix = "";
   let node = range.endContainer;
@@ -67,10 +69,12 @@ function getRangeSuffix(range: Range): string {
     return "";
   }
 }
+
 interface Matcher {
   matcher: string;
   regex: string;
 }
+
 const prefixList: Matcher[] = [
   { matcher: "h1", regex: "#" },
   { matcher: "h2", regex: "##" },
@@ -82,6 +86,7 @@ const prefixList: Matcher[] = [
   { matcher: "strong", regex: "\\*\\*|__" },
   { matcher: "em", regex: "\\*|_" },
   { matcher: "del", regex: "~~" },
+  { matcher: "mark", regex: "==" },
   { matcher: "ul > li", regex: "-|\\+|\\*" },
   { matcher: "ol > li", regex: "\\d+\\." },
   { matcher: "pre > code", regex: "```|\\t| {4}" },
@@ -89,14 +94,17 @@ const prefixList: Matcher[] = [
   { matcher: "a.internal-link", regex: "\\[\\[(.+?\\|)?" },
   { matcher: "a", regex: "\\[|<" },
 ];
+
 const suffixList: Matcher[] = [
   { matcher: "strong", regex: "\\*\\*|__" },
   { matcher: "em", regex: "\\*|_" },
   { matcher: "del", regex: "~~" },
+  { matcher: "mark", regex: "==" },
   { matcher: "code", regex: "`" },
   { matcher: "a.internal-link", regex: "\\]\\]" },
   { matcher: "a", regex: "\\]|>" },
 ];
+
 function getRangeText(range: Range): string[] {
   const text: string[] = [];
   let node = range.startContainer;
@@ -126,12 +134,14 @@ function getRangeText(range: Range): string[] {
 
   return text;
 }
+
 function nextNode(node: Node): Node {
   while (!node.nextSibling) {
     node = node.parentNode;
   }
   return node.nextSibling;
 }
+
 function appendNodeText(
   text: string[],
   node: Node,
@@ -148,11 +158,13 @@ function appendNodeText(
     }
   }
 }
+
 // from MDN: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Regular_Expressions#escaping
 function escapeRegExp(re: string): string {
   // $& means the whole matched string
   return re.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 }
+
 function argOrDefault<T>(arg: T | undefined, defaultVal: T): T {
   return arg === undefined ? defaultVal : arg;
 }
