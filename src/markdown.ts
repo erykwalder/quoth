@@ -12,7 +12,7 @@ interface MatchedToken {
 
 const BlockQuoteToken: MarkdownToken = {
   type: "linestart",
-  matcher: ">( |\\t)?| {4}|\\t",
+  matcher: ">( |\\t)?",
 };
 const HeadingToken: MarkdownToken = {
   type: "linestart",
@@ -20,7 +20,14 @@ const HeadingToken: MarkdownToken = {
 };
 const ListItemToken: MarkdownToken = {
   type: "linestart",
-  matcher: "(\\d+\\.|-|\\+|\\*)( |\\t)",
+  // without knowing the previous line
+  // it is impossible to know if leading space
+  // is an indented bullet or a code block
+  matcher: "( |\t)*(\\d+\\.|-|\\+|\\*)( |\\t)",
+};
+const CodeLineToken: MarkdownToken = {
+  type: "linestart",
+  matcher: " {4}|\\t",
 };
 const StrongToken: MarkdownToken = {
   type: "surrounding",
@@ -37,6 +44,7 @@ const tokenList: MarkdownToken[] = [
   BlockQuoteToken,
   HeadingToken,
   ListItemToken,
+  CodeLineToken,
   StrongToken,
   StrikeToken,
   MarkToken,

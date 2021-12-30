@@ -32,6 +32,11 @@ describe(extractRangeWithContext, () => {
       [">Testing", "Testing", ">Testing"],
       ["> Testing", "Testing", "> Testing"],
       [">\tTesting", "Testing", ">\tTesting"],
+    ]);
+  });
+
+  it("prepends code blocks", () => {
+    testExtract([
       ["\tTesting", "Testing", "\tTesting"],
       ["    Testing", "Testing", "    Testing"],
     ]);
