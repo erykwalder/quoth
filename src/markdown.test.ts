@@ -119,6 +119,28 @@ describe(normalizeMarkdown, () => {
     ]);
   });
 
+  it("removes headings for single lines", () => {
+    testNormalize([
+      ["# Testing", "Testing"],
+      ["## Testing", "Testing"],
+      ["### Testing", "Testing"],
+      ["#### Testing", "Testing"],
+      ["##### Testing", "Testing"],
+      ["###### Testing", "Testing"],
+    ]);
+  });
+
+  it("leaves headings for multiple lines", () => {
+    testNormalize([
+      ["# Testing1\nTesting2", "# Testing1\nTesting2"],
+      ["## Testing1\nTesting2", "## Testing1\nTesting2"],
+      ["### Testing1\nTesting2", "### Testing1\nTesting2"],
+      ["#### Testing1\nTesting2", "#### Testing1\nTesting2"],
+      ["##### Testing1\nTesting2", "##### Testing1\nTesting2"],
+      ["###### Testing1\nTesting2", "###### Testing1\nTesting2"],
+    ]);
+  });
+
   it("removes redundant blockquotes", () => {
     testNormalize([
       [`> Testing`, "Testing"],
