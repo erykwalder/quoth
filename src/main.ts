@@ -56,11 +56,13 @@ export default class QuothPlugin extends Plugin {
     });
 
     this.registerDomEvent(document, "selectionchange", selectListener);
-    this.registerDomEvent(
-      document,
-      "selectionchange",
-      copyButtonListener.bind(null, this.app, this.settings.copySettings)
-    );
+    if (Platform.isMobile) {
+      this.registerDomEvent(
+        document,
+        "selectionchange",
+        copyButtonListener.bind(null, this.app, this.settings.copySettings)
+      );
+    }
   }
 
   async loadSettings() {

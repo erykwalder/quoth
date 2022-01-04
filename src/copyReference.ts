@@ -3,7 +3,6 @@ import {
   Editor,
   MarkdownView,
   Notice,
-  Platform,
   resolveSubpath,
   setIcon,
   TFile,
@@ -33,7 +32,7 @@ interface refBuilder {
 }
 
 export function copyButtonListener(app: App, settings: CopySettings): void {
-  if (!Platform.isMobile || !settings.showMobileButton) {
+  if (!settings.showMobileButton) {
     return;
   }
   const view = app.workspace.getActiveViewOfType(MarkdownView);
