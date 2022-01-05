@@ -1,7 +1,7 @@
 {
   "id": "quoth",
   "name": "Quoth",
-  "version": "0.1.1",
+  "version": "0.2.0",
   "minAppVersion": "0.12.9",
   "description": "More flexible embedding. Embed precise selections, inline embeds, optionally include author and title.",
   "authorUrl": "https://github.com/erykwalder/quoth",
