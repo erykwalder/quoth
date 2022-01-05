@@ -123,7 +123,7 @@ function createEmbedWrapper(
     path = path.concat(quote.headings);
   }
   const span = el.createSpan({
-    cls: "internal-embed is-loaded",
+    cls: "internal-embed",
     attr: {
       alt: path.join(" > "),
       src: path.join("#"),
@@ -131,7 +131,7 @@ function createEmbedWrapper(
   });
   const mdEmbed = span.createDiv({ cls: "markdown-embed" });
   const mdEmbedCont = mdEmbed.createDiv({ cls: "markdown-embed-content" });
-  const mdPrev = mdEmbedCont.createDiv({ cls: "markdown-preview-view" });
+  const mdPrev = mdEmbedCont.createDiv({ cls: "quoth-embedded-view" });
   const mdPrevSec = mdPrev.createDiv({
     cls: "markdown-preview-sizer markdown-preview-section",
     attr: {
