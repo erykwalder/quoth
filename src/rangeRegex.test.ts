@@ -6,7 +6,8 @@ import { rangeRegex } from "./rangeRegex";
 
 const html = `
 <div><p id="p1">Simple plaintext.</p></div>
-<div><p id="p2"><strong>A paragraph <em> that has both</em> bold</strong> and <em>italic</em> text.</p></div>
+<div><p id="p2">More plaintext.</p></div>
+<div><p id="p3"><strong>A paragraph <em>that has both</em> bold</strong> and <em>italic</em> text.</p></div>
 `;
 
 interface pos {
@@ -50,8 +51,8 @@ describe(rangeRegex, () => {
         result: /plaintext/ms,
       },
       {
-        start: { node: el("#p2").lastChild, offset: 0 },
-        end: { node: el("#p2").lastChild, offset: 6 },
+        start: { node: el("#p3").lastChild, offset: 0 },
+        end: { node: el("#p3").lastChild, offset: 6 },
         result: /text\./ms,
       },
     ]);
@@ -63,6 +64,27 @@ describe(rangeRegex, () => {
         start: { node: el("#p1"), offset: 0 },
         end: { node: el("#p1"), offset: 1 },
         result: /Simple\s+plaintext\./ms,
+      },
+    ]);
+  });
+
+  it("works across multiple elements", () => {
+    testRanges([
+      {
+        start: { node: el("#p1").firstChild, offset: 0 },
+        end: { node: el("#p2").firstChild, offset: 4 },
+        result: /Simple\s+plaintext\..*?\s+.*?More/ms,
+      },
+    ]);
+  });
+
+  it("adds prefixes and suffixes for surrounding els", () => {
+    testRanges([
+      {
+        start: { node: el("#p3 > strong").firstChild, offset: 0 },
+        end: { node: el("#p3 > strong > em").firstChild, offset: 13 },
+        result:
+          /((\*\*|__)\s*?)?A\s+paragraph\s+.*?that\s+has\s+both(\s*?(\*|_))?/ms,
       },
     ]);
   });

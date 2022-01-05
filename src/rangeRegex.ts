@@ -19,9 +19,9 @@ function getRangePrefix(range: Range): string {
       node = node.firstChild;
     }
     while (node.isSameNode(node.parentNode.firstChild)) {
-      if (node.nodeType === node.ELEMENT_NODE) {
+      if (node.parentNode.nodeType === Node.ELEMENT_NODE) {
         const matcher = prefixList.find((p) =>
-          (node as HTMLElement).matches(p.matcher)
+          (node.parentNode as HTMLElement).matches(p.matcher)
         );
         if (matcher) {
           prefix = `((${matcher.regex})\\s*?)?` + prefix;
@@ -51,9 +51,9 @@ function getRangeSuffix(range: Range): string {
       node = node.lastChild;
     }
     while (node.isSameNode(node.parentNode.lastChild)) {
-      if (node.nodeType === node.ELEMENT_NODE) {
+      if (node.parentNode.nodeType === node.ELEMENT_NODE) {
         const matcher = suffixList.find((p) =>
-          (node as HTMLElement).matches(p.matcher)
+          (node.parentNode as HTMLElement).matches(p.matcher)
         );
         if (matcher) {
           suffix += `(\\s*?(${matcher.regex}))?`;
