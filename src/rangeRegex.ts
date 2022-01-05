@@ -1,11 +1,7 @@
 export function rangeRegex(range: Range): RegExp {
   return new RegExp(
     getRangePrefix(range) +
-      getRangeText(range)
-        .map(escapeRegExp)
-        .join(".*?")
-        .trim()
-        .replace(/\s+/gm, "\\s+") +
+      getRangeText(range).join(".*?").trim().replace(/\s+/gm, "\\s+") +
       getRangeSuffix(range),
     "ms"
   );
@@ -70,12 +66,7 @@ function getRangeSuffix(range: Range): string {
   }
 }
 
-interface Matcher {
-  matcher: string;
-  regex: string;
-}
-
-const prefixList: Matcher[] = [
+const prefixList = [
   { matcher: "h1", regex: "#" },
   { matcher: "h2", regex: "##" },
   { matcher: "h3", regex: "###" },
@@ -95,7 +86,7 @@ const prefixList: Matcher[] = [
   { matcher: "a", regex: "\\[|<" },
 ];
 
-const suffixList: Matcher[] = [
+const suffixList = [
   { matcher: "strong", regex: "\\*\\*|__" },
   { matcher: "em", regex: "\\*|_" },
   { matcher: "del", regex: "~~" },
@@ -105,66 +96,110 @@ const suffixList: Matcher[] = [
   { matcher: "a", regex: "\\]|>" },
 ];
 
+const appendList = [
+  { matcher: ".copy-code-button", fn: nop },
+  { matcher: ".collapse-indicator", fn: nop },
+  { matcher: ".markdown-preview-pusher", fn: nop },
+  { matcher: ".internal-embed", fn: appendEmbed },
+  { matcher: "img", fn: appendImg },
+  { matcher: ".footnote-ref", fn: appendFootnote },
+  { matcher: "iframe", fn: appendIframe },
+  { matcher: "*", fn: appendChildren },
+];
+
 function getRangeText(range: Range): string[] {
   const text: string[] = [];
-  let node = range.startContainer;
-  if (node.isSameNode(range.endContainer)) {
-    appendNodeText(text, node, range.startOffset, range.endOffset);
-    return text;
-  }
-  // walk up
-  appendNodeText(text, node, range.startOffset);
-  node = nextNode(node);
-  while (!node.contains(range.endContainer)) {
-    appendNodeText(text, node);
-    node = nextNode(node);
-  }
-  //walk down
-  while (!node.isSameNode(range.endContainer)) {
-    for (let i = 0; i < node.childNodes.length; i++) {
-      if (node.childNodes[i].contains(range.endContainer)) {
-        node = node.childNodes[i];
-        break;
-      } else {
-        appendNodeText(text, node.childNodes[i]);
-      }
-    }
-  }
-  appendNodeText(text, node, 0, range.endOffset);
-
+  walkRange(range, (n) => {
+    appendNode(text, n, range);
+  });
   return text;
 }
 
-function nextNode(node: Node): Node {
-  while (!node.nextSibling) {
-    node = node.parentNode;
-  }
-  return node.nextSibling;
-}
-
-function appendNodeText(
-  text: string[],
-  node: Node,
-  startOffset = 0,
-  endOffset?: number
-): void {
-  if (node.nodeType === Node.TEXT_NODE) {
-    endOffset = argOrDefault(endOffset, node.textContent.length);
-    text.push(node.textContent.slice(startOffset, endOffset));
-  } else if (node.nodeType === Node.ELEMENT_NODE) {
-    endOffset = argOrDefault(endOffset, node.childNodes.length);
-    for (let i = startOffset; i < endOffset; i++) {
-      appendNodeText(text, node.childNodes[i]);
+function walkRange(range: Range, fn: (n: Node) => void): void {
+  let node = range.startContainer;
+  while (!node.isSameNode(range.endContainer)) {
+    if (node.contains(range.endContainer)) {
+      node = node.firstChild;
+    } else {
+      fn(node);
+      while (!node.nextSibling) {
+        node = node.parentNode;
+      }
+      node = node.nextSibling;
     }
   }
+  fn(range.endContainer);
+}
+
+function appendNode(text: string[], node: Node, range: Range): void {
+  if (node.nodeType === Node.TEXT_NODE) {
+    appendTextNode(text, node as Text, range);
+  } else if (node.nodeType === Node.ELEMENT_NODE) {
+    appendEl(text, node as Element, range);
+  }
+}
+
+function appendEl(text: string[], el: Element, range: Range): void {
+  const fn = appendList.find((m) => el.matches(m.matcher)).fn;
+  fn(text, el, range);
+}
+
+function appendEmbed(text: string[], el: Element): void {
+  text.push(`!\\[\\[${el.getAttribute("src")}\\]\\]`);
+}
+
+function appendImg(text: string[], el: Element): void {
+  let img = "!\\[";
+  if (el.hasAttribute("alt")) {
+    img += el.getAttribute("alt");
+  }
+  img += "\\]\\(" + el.getAttribute("src");
+  if (el.hasAttribute("title")) {
+    img += ` "${el.getAttribute("title")}"`;
+  }
+  img += "\\)";
+  text.push(img);
+}
+
+function appendFootnote(text: string[]): void {
+  text.push("\\[\\^[^\\]]*\\]");
+}
+
+function appendIframe(text: string[], el: Element): void {
+  text.push(`<iframe[^>]+src="${el.getAttribute("src")}"[^>]*></iframe>`);
+}
+
+function appendChildren(text: string[], el: Element, range: Range): void {
+  let startOffset = 0,
+    endOffset = el.childNodes.length;
+  if (el.isSameNode(range.startContainer)) {
+    startOffset = range.startOffset;
+  }
+  if (el.isSameNode(range.endContainer)) {
+    endOffset = range.endOffset;
+  }
+  for (let i = startOffset; i < endOffset; i++) {
+    appendNode(text, el.childNodes[i], range);
+  }
+}
+
+// eslint-disable-next-line @typescript-eslint/no-empty-function
+function nop() {}
+
+function appendTextNode(text: string[], node: Text, range: Range): void {
+  let startOffset = 0,
+    endOffset = node.textContent.length;
+  if (node.isSameNode(range.startContainer)) {
+    startOffset = range.startOffset;
+  }
+  if (node.isSameNode(range.endContainer)) {
+    endOffset = range.endOffset;
+  }
+  text.push(escapeRegex(node.textContent.slice(startOffset, endOffset)));
 }
 
 // from MDN: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Regular_Expressions#escaping
-function escapeRegExp(re: string): string {
+function escapeRegex(re: string): string {
   // $& means the whole matched string
   return re.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-}
-
-function argOrDefault<T>(arg: T | undefined, defaultVal: T): T {
-  return arg === undefined ? defaultVal : arg;
 }
