@@ -72,7 +72,7 @@ async function assembleQuote(
     headings: embed.heading || [],
     markdown: quote,
     title: file.basename,
-    author: fileCache.frontmatter?.author as string,
+    author: fileCache.frontmatter?.author as string | undefined,
   };
 }
 
@@ -164,11 +164,11 @@ function renderOptions(
   show: EmbedOptions,
   quote: Quote
 ): void {
-  if (!show.author && !show.title) {
+  if (!(show.author && quote.author) && !show.title) {
     return;
   }
   const source = el.createDiv({ cls: "quoth-source" });
-  if (show.author) {
+  if (show.author && quote.author) {
     source.createSpan({ cls: "quoth-author", text: quote.author });
   }
   if (show.title) {
