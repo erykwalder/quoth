@@ -47,6 +47,11 @@ All the fields in the code block can be seen below:
 There are currently some limitations to the current implementation:
 
 - Copying from preview mode only works if the underlying markdown can be
-  reconstructed. Things like footnotes are not currently handled.
-- The embedded content cannot contain another quoth code block, because that
-  could lead to infinite recursion.
+  reconstructed.
+  Things like mathjax are not currently handled.
+- The embedded content cannot contain another quoth code block,
+  because that could lead to infinite recursion.
+- Rendering relies on an async call to Obsidian's renderMarkdown API,
+  so embeds relying on postprocessing (like other embeds) will not work.
+- It is for display only. It cannot do things that would update the
+  original source, like checking checkboxes.
