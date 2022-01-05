@@ -26,3 +26,18 @@
   justify-content: center;
   filter: drop-shadow(1px 1px 1px rgba(0, 0, 0, 0.2));
 }
+
+.quoth-embedded-view {
+  padding: 20px 10px 10px 10px;
+  font-size: var(--editor-font-size);
+  line-height: 1.5;
+  padding: 20px 30px;
+  width: 100%;
+  height: 100%;
+  position: relative;
+  overflow-y: auto;
+  overflow-wrap: break-word;
+  color: var(--text-normal);
+  user-select: text;
+  -webkit-user-select: text;
+}
