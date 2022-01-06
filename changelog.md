@@ -1,5 +1,11 @@
 # Changelog
 
+### version 0.2.1
+
+Fixes:
+
+- Loading settings on startup
+
 ### version 0.2.0
 
 New Features:
