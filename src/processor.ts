@@ -6,13 +6,13 @@ import {
   MarkdownRenderer,
   resolveSubpath,
   setIcon,
-  Workspace,
+  TFile,
 } from "obsidian";
 import { extractRangeWithContext, normalizeMarkdown } from "./markdown";
 import { Embed, EmbedDisplay, EmbedOptions, parse } from "./parse";
 
 interface Quote {
-  file: string;
+  file: TFile;
   headings: string[];
   markdown: string;
   title: string;
@@ -28,14 +28,7 @@ export async function quothProcessor(
   try {
     const embed = parse(source);
     const quote = await assembleQuote(app, ctx.sourcePath, embed);
-    renderQuote(
-      app.workspace,
-      el,
-      ctx.sourcePath,
-      quote,
-      embed.display,
-      embed.show
-    );
+    renderQuote(app, el, ctx.sourcePath, quote, embed.display, embed.show);
   } catch (e) {
     renderError(el, e);
   }
@@ -68,7 +61,7 @@ async function assembleQuote(
     quote = text;
   }
   return {
-    file: embed.file,
+    file: file,
     headings: embed.heading || [],
     markdown: quote,
     title: file.basename,
@@ -93,7 +86,7 @@ function headingContent(
 }
 
 function renderQuote(
-  workspace: Workspace,
+  app: App,
   el: HTMLElement,
   source: string,
   quote: Quote,
@@ -102,14 +95,14 @@ function renderQuote(
 ) {
   if (display == "embedded") {
     el = createEmbedWrapper(el, source, quote, (p, s, n) =>
-      workspace.openLinkText(p, s, n)
+      app.workspace.openLinkText(p, s, n)
     );
   }
   if (quote.markdown.includes("```quoth")) {
     throw new Error("Can not quote a quoth code block.");
   }
   MarkdownRenderer.renderMarkdown(quote.markdown, el, source, null);
-  renderOptions(el, show, quote);
+  renderOptions(el, app, source, show, quote);
 }
 
 function createEmbedWrapper(
@@ -118,7 +111,7 @@ function createEmbedWrapper(
   quote: Quote,
   openLink: (p: string, s: string, n: boolean) => Promise<void>
 ): HTMLElement {
-  let path = [quote.file];
+  let path = [quote.title];
   if (quote.headings.length > 0) {
     path = path.concat(quote.headings);
   }
@@ -161,6 +154,8 @@ function createEmbedWrapper(
 
 function renderOptions(
   el: HTMLElement,
+  app: App,
+  sourcePath: string,
   show: EmbedOptions,
   quote: Quote
 ): void {
@@ -172,7 +167,18 @@ function renderOptions(
     source.createSpan({ cls: "quoth-author", text: quote.author });
   }
   if (show.title) {
-    source.createSpan({ cls: "quoth-title", text: quote.title });
+    const path = app.metadataCache.fileToLinktext(quote.file, sourcePath);
+    const title = source.createSpan({ cls: "quoth-title" });
+    title.createEl("a", {
+      cls: "internal-link",
+      href: path,
+      text: quote.title,
+      attr: {
+        target: "_blank",
+        "data-href": path,
+        rel: "noopener",
+      },
+    });
   }
 }
 
