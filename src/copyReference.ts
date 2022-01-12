@@ -120,7 +120,7 @@ function getBestRange(
 
 function buildReference(rb: refBuilder): string {
   let ref = "```quoth\n";
-  ref += `file: [[${rb.file.path}]]\n`;
+  ref += `file: ${rb.app.fileManager.generateMarkdownLink(rb.file, "/")}\n`;
   if (rb?.headings.length > 0) {
     ref += `heading: #${rb.headings.join("#")}\n`;
   }
