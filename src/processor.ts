@@ -47,11 +47,7 @@ async function assembleQuote(
     throw new Error(`File not found: ${embed.file}`);
   }
   const fileCache = app.metadataCache.getFileCache(file);
-  const text = headingContent(
-    await app.vault.cachedRead(file),
-    fileCache,
-    embed.heading
-  );
+  const text = quoteContent(await app.vault.cachedRead(file), fileCache, embed);
   let quote: string;
   if (embed.ranges.length > 0) {
     quote = normalizeMarkdown(
@@ -69,17 +65,19 @@ async function assembleQuote(
   };
 }
 
-function headingContent(
-  data: string,
-  cache: CachedMetadata,
-  path: string[] | null
-) {
-  if (path?.length > 0) {
-    const pathResult = resolveSubpath(cache, `#${path.join("#")}`);
+function quoteContent(data: string, cache: CachedMetadata, embed: Embed) {
+  let subpath: string;
+  if (embed.block?.length > 0) {
+    subpath = "^" + embed.block;
+  } else if (embed.heading?.length > 0) {
+    subpath = "#" + embed.heading.join("#");
+  }
+  if (subpath) {
+    const pathResult = resolveSubpath(cache, subpath);
     if (pathResult) {
       return data.slice(pathResult.start.offset, pathResult.end?.offset);
     } else {
-      throw new Error(`heading path not found: #${path.join("#")}`);
+      throw new Error(`subpath not found: ${subpath}`);
     }
   }
   return data;

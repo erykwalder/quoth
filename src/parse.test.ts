@@ -20,6 +20,11 @@ describe("parser", () => {
     expect(result.heading).toStrictEqual(["Lunar Cycles", "Waning"]);
   });
 
+  it("parses a block id", () => {
+    const result: Embed = parse("block: ^blockid");
+    expect(result.block).toBe("blockid");
+  });
+
   it("parses a single number-based range", () => {
     const result: Embed = parse("ranges: 5:10 to 7:15");
     expect(result.ranges).toStrictEqual([

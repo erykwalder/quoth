@@ -4,6 +4,7 @@ import { Range, PosRange, StringRange, WholeString } from "./range";
 export type Embed = {
   file: string;
   heading?: string[];
+  block?: string;
   ranges: Range[];
   join: string;
   show: EmbedOptions;
@@ -65,6 +66,13 @@ const lineParsers: { [key: string]: LineParser } = {
     }
     if (headings.length > 0) {
       data.heading = headings;
+    }
+  },
+  block: (text: string, data: Embed) => {
+    if (/^\^\w+$/.test(text)) {
+      data.block = text.slice(1);
+    } else {
+      throw new Error("invalid block line");
     }
   },
   ranges: (text: string, data: Embed) => {

@@ -27,6 +27,7 @@ All the fields in the code block can be seen below:
     ```quoth
     file: [[Source File]]
     heading: #Source Section
+    block: ^blockid
     ranges: "Hello " to "world.", "Foobar" to "Bizzbaz"
     join: " -- "
     display: inline
@@ -37,6 +38,7 @@ All the fields in the code block can be seen below:
 | --------- | -------------------------------------------- | ----------------------------------------------------------------------------------------------------------- | ---------- |
 | `file`    | `[[filename]]`                               | **Required.** The filename of a markdown file in internal link syntax.                                      | None       |
 | `heading` | `#heading1#heading2`                         | The parent headings of an embed. These are case sensitive. Multiple can be chained for greater specificity. | None       |
+| `block`   | `^blockid`                                   | The block id containing the quote.                                                                          | None       |
 | `ranges`  | `"text" to "text"` or `line:col to line:col` | The part of the document you would like to embed. Multiple ranges can be joined with `,`.                   | None       |
 | `join`    | `"; "`                                       | How to combine multiple ranges.                                                                             | `" ... "`  |
 | `display` | `embedded` or `inline`                       | How to display the embed.                                                                                   | `embedded` |
