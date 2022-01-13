@@ -13,7 +13,7 @@ import { Embed, EmbedDisplay, EmbedOptions, parse } from "./parse";
 
 interface Quote {
   file: TFile;
-  headings: string[];
+  subpath: string;
   markdown: string;
   title: string;
   author?: string;
@@ -47,7 +47,11 @@ async function assembleQuote(
     throw new Error(`File not found: ${embed.file}`);
   }
   const fileCache = app.metadataCache.getFileCache(file);
-  const text = quoteContent(await app.vault.cachedRead(file), fileCache, embed);
+  const text = quoteContent(
+    await app.vault.cachedRead(file),
+    fileCache,
+    embed.subpath
+  );
   let quote: string;
   if (embed.ranges.length > 0) {
     quote = normalizeMarkdown(
@@ -58,20 +62,14 @@ async function assembleQuote(
   }
   return {
     file: file,
-    headings: embed.heading || [],
+    subpath: embed.subpath,
     markdown: quote,
     title: file.basename,
     author: fileCache.frontmatter?.author as string | undefined,
   };
 }
 
-function quoteContent(data: string, cache: CachedMetadata, embed: Embed) {
-  let subpath: string;
-  if (embed.block?.length > 0) {
-    subpath = "^" + embed.block;
-  } else if (embed.heading?.length > 0) {
-    subpath = "#" + embed.heading.join("#");
-  }
+function quoteContent(data: string, cache: CachedMetadata, subpath: string) {
   if (subpath) {
     const pathResult = resolveSubpath(cache, subpath);
     if (pathResult) {
@@ -109,15 +107,12 @@ function createEmbedWrapper(
   quote: Quote,
   openLink: (p: string, s: string, n: boolean) => Promise<void>
 ): HTMLElement {
-  let path = [quote.title];
-  if (quote.headings.length > 0) {
-    path = path.concat(quote.headings);
-  }
+  const path = quote.title + quote.subpath;
   const span = el.createSpan({
     cls: "internal-embed",
     attr: {
-      alt: path.join(" > "),
-      src: path.join("#"),
+      alt: path.replace(/#/g, " ^ "),
+      src: path,
     },
   });
   const mdEmbed = span.createDiv({ cls: "markdown-embed" });
@@ -143,7 +138,7 @@ function createEmbedWrapper(
   setIcon(mdLink, "link", 20);
   mdLink.addEventListener("click", async (e) => {
     if (e.button === 0) {
-      await openLink(path.join("#"), sourcePath, Keymap.isModEvent(e));
+      await openLink(path, sourcePath, Keymap.isModEvent(e));
     }
   });
 
