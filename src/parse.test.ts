@@ -12,19 +12,16 @@ describe("parser", () => {
 
   it("parses the heading", () => {
     const result: Embed = parse("heading: #Lunar Cycles");
-    expect(result.heading).toStrictEqual(["Lunar Cycles"]);
     expect(result.subpath).toBe("#Lunar Cycles");
   });
 
   it("parses multiple headings", () => {
     const result: Embed = parse("heading: #Lunar Cycles#Waning");
-    expect(result.heading).toStrictEqual(["Lunar Cycles", "Waning"]);
     expect(result.subpath).toBe("#Lunar Cycles#Waning");
   });
 
   it("parses a block id", () => {
     const result: Embed = parse("block: ^blockid");
-    expect(result.block).toBe("blockid");
     expect(result.subpath).toBe("#^blockid");
   });
 
@@ -88,7 +85,6 @@ heading: #Lunar Cycles
     `;
     const result: Embed = parse(text);
     expect(result.file).toBe("Once in a Blue Moon");
-    expect(result.heading).toStrictEqual(["Lunar Cycles"]);
     expect(result.subpath).toBe("#Lunar Cycles");
   });
 
@@ -104,8 +100,6 @@ display: inline`;
     expect(result).toStrictEqual({
       file: "File Title",
       subpath: "#Heading#21#^someid",
-      heading: ["Heading", "21"],
-      block: "someid",
       ranges: [
         new PosRange({ line: 123, ch: 10 }, { line: 125, ch: 10 }),
         new StringRange("doc", "text"),

@@ -4,8 +4,6 @@ import { Range, PosRange, StringRange, WholeString } from "./range";
 export type Embed = {
   file: string;
   subpath: string;
-  heading?: string[];
-  block?: string;
   ranges: Range[];
   join: string;
   show: EmbedOptions;
@@ -59,21 +57,15 @@ const lineParsers: { [key: string]: LineParser } = {
     }
   },
   heading: (text: string, data: Embed) => {
-    // Match: #text
-    const headingRegex = /#([^#]+)/g;
-    const headings: string[] = [];
-    let matches: string[];
-    while ((matches = headingRegex.exec(text)) !== null) {
-      headings.push(matches[1]);
-    }
-    if (headings.length > 0) {
-      data.heading = headings;
-      data.subpath += "#" + headings.join("#");
+    // Match: #text#moretext
+    if (/^(#[^#]+)+$/.test(text)) {
+      data.subpath += text;
+    } else {
+      throw new Error("invalid heading line");
     }
   },
   block: (text: string, data: Embed) => {
     if (/^\^\w+$/.test(text)) {
-      data.block = text.slice(1);
       data.subpath += "#" + text;
     } else {
       throw new Error("invalid block line");
