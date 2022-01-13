@@ -1,5 +1,32 @@
-import { HeadingCache } from "obsidian";
+import { BlockCache, CachedMetadata, HeadingCache } from "obsidian";
 import { PosRange } from "./range";
+
+export function scopeSubpath(cache: CachedMetadata, range: PosRange): string {
+  const block = getContainingBlock(cache.blocks, range);
+  if (block) {
+    return "#^" + block.id;
+  }
+  const headings = getParentHeadings(cache.headings, range);
+  if (headings.length > 0) {
+    return "#" + headings.map((h) => h.heading).join("#");
+  }
+  return "";
+}
+
+export function getContainingBlock(
+  blocks: Record<string, BlockCache> | null,
+  range: PosRange
+): BlockCache | null {
+  for (const k in blocks) {
+    if (
+      blocks[k].position.start.line <= range.start.line &&
+      blocks[k].position.end.line >= range.end.line
+    ) {
+      return blocks[k];
+    }
+  }
+  return null;
+}
 
 export function getParentHeadings(
   headings: HeadingCache[] | null,

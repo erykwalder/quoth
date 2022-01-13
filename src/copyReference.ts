@@ -6,7 +6,7 @@ import {
   resolveSubpath,
   TFile,
 } from "obsidian";
-import { getParentHeadings } from "./headings";
+import { scopeSubpath } from "./subpath";
 import { Range, PosRange, StringRange, WholeString } from "./range";
 import { isUnique, uniqueStrRange } from "./stringSearch";
 import getSelectedRange, { isTextSelected } from "./selection";
@@ -27,7 +27,7 @@ interface refBuilder {
   file: TFile;
   posRange?: PosRange;
   range?: Range;
-  headings?: string[];
+  subpath?: string;
 }
 
 export function checkCopyReference(
@@ -65,10 +65,9 @@ function copyReference(rb: refBuilder): void {
     const selectedText = rb.editor.getRange(rb.posRange.start, rb.posRange.end);
 
     const fileCache = rb.app.metadataCache.getFileCache(rb.file);
-    const parents = getParentHeadings(fileCache.headings, rb.posRange);
-    rb.headings = parents.map((h) => h.heading);
-    if (parents.length > 0) {
-      const subPath = resolveSubpath(fileCache, `#${rb.headings.join("#")}`);
+    rb.subpath = scopeSubpath(fileCache, rb.posRange);
+    if (rb.subpath.length > 0) {
+      const subPath = resolveSubpath(fileCache, rb.subpath);
       text = text.slice(subPath.start.offset, subPath.end?.offset);
       rb.posRange.start.line -= subPath.start.line;
       rb.posRange.end.line -= subPath.start.line;
@@ -120,10 +119,11 @@ function getBestRange(
 
 function buildReference(rb: refBuilder): string {
   let ref = "```quoth\n";
-  ref += `file: ${rb.app.fileManager.generateMarkdownLink(rb.file, "/")}\n`;
-  if (rb?.headings.length > 0) {
-    ref += `heading: #${rb.headings.join("#")}\n`;
-  }
+  ref += `path: ${rb.app.fileManager.generateMarkdownLink(
+    rb.file,
+    "/",
+    rb.subpath
+  )}\n`;
   ref += `ranges: ${rb.range.toString()}\n`;
   if (rb.settings.defaultDisplay) {
     ref += `display: ${rb.settings.defaultDisplay}\n`;
