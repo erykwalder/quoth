@@ -3,6 +3,7 @@ import { Range, PosRange, StringRange, WholeString } from "./range";
 
 export type Embed = {
   file: string;
+  subpath: string;
   heading?: string[];
   block?: string;
   ranges: Range[];
@@ -23,6 +24,7 @@ type LineParser = (text: string, data: Embed) => void;
 export const parse = (text: string): Embed => {
   const embedData: Embed = {
     file: "",
+    subpath: "",
     ranges: [],
     join: " ... ",
     show: {
@@ -66,11 +68,13 @@ const lineParsers: { [key: string]: LineParser } = {
     }
     if (headings.length > 0) {
       data.heading = headings;
+      data.subpath += "#" + headings.join("#");
     }
   },
   block: (text: string, data: Embed) => {
     if (/^\^\w+$/.test(text)) {
       data.block = text.slice(1);
+      data.subpath += "#" + text;
     } else {
       throw new Error("invalid block line");
     }
