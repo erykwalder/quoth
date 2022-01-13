@@ -2,6 +2,27 @@ import { parse, Embed } from "./parse";
 import { PosRange, StringRange, WholeString } from "./range";
 
 describe("parser", () => {
+  it("parses the path with just a filename", () => {
+    const result: Embed = parse("path: [[Once in a Blue Moon]]");
+    expect(result.file).toBe("Once in a Blue Moon");
+  });
+
+  it("parses the path with a filename and heading", () => {
+    let result: Embed = parse("path: [[Once in a Blue Moon#Lunar Cycles]]");
+    expect(result.file).toBe("Once in a Blue Moon");
+    expect(result.subpath).toBe("#Lunar Cycles");
+
+    result = parse("path: [[Once in a Blue Moon#Lunar Cycles#21]]");
+    expect(result.file).toBe("Once in a Blue Moon");
+    expect(result.subpath).toBe("#Lunar Cycles#21");
+  });
+
+  it("parses the path with a filename and block id", () => {
+    const result: Embed = parse("path: [[Once in a Blue Moon#^ablockid]]");
+    expect(result.file).toBe("Once in a Blue Moon");
+    expect(result.subpath).toBe("#^ablockid");
+  });
+
   it("parses the file name", () => {
     let result: Embed = parse("file: [[Once in a Blue Moon]]");
     expect(result.file).toBe("Once in a Blue Moon");

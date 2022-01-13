@@ -48,6 +48,16 @@ export const parse = (text: string): Embed => {
 };
 
 const lineParsers: { [key: string]: LineParser } = {
+  path: (text: string, data: Embed) => {
+    // Match: [[filename#heading#^blockid]]
+    let match;
+    if ((match = text.match(/^\[\[([^#|[\]^]+)((#[^#]+)*)\]\]$/))) {
+      data.file = match[1];
+      data.subpath = match[2];
+    } else {
+      throw new Error("invalid path line");
+    }
+  },
   file: (text: string, data: Embed) => {
     // Match: [[filename]]
     if (/^\[\[.+?\]\]$/.test(text)) {
