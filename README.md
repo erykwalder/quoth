@@ -34,7 +34,7 @@ All the fields in the code block can be seen below:
 
 | Line      | Syntax                                                     | Description                                                                                     | Default    |
 | --------- | ---------------------------------------------------------- | ----------------------------------------------------------------------------------------------- | ---------- |
-| `path`    | `[[filename]]`, `[[file#heading]]`, or `[[file#^blockid]]` | **Required.** The path to the content that you want to include, link an internal obsidian link. | None       |
+| `path`    | `[[filename]]`, `[[file#heading]]`, or `[[file#^blockid]]` | **Required.** The path to the content that you want to include, like an internal obsidian link. | None       |
 | `ranges`  | `"text" to "text"` or `line:col to line:col`               | The part of the document you would like to embed. Multiple ranges can be joined with `,`.       | None       |
 | `join`    | `"; "`                                                     | How to combine multiple ranges.                                                                 | `" ... "`  |
 | `display` | `embedded` or `inline`                                     | How to display the embed.                                                                       | `embedded` |
