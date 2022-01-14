@@ -8,12 +8,12 @@ export function scopeSubpath(cache: CachedMetadata, range: PosRange): string {
   }
   const headings = getParentHeadings(cache.headings, range);
   if (headings.length > 0) {
+    if (!isUniquePath(cache.headings, headings)) {
+      return "";
+    }
     let uniqueLen = 1;
     while (!isUniquePath(cache.headings, headings.slice(-uniqueLen))) {
       uniqueLen += 1;
-      if (uniqueLen > headings.length) {
-        return "";
-      }
     }
     return (
       "#" +
