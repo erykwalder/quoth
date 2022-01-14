@@ -159,6 +159,37 @@ class QuothSettingTab extends PluginSettingTab {
 
     containerEl.createEl("h2", { text: "Quoth Settings" });
 
+    new Setting(containerEl)
+      .setName("Re-Index Quoths")
+      .setDesc(
+        "This will load all quoths in your vault into the index. " +
+          "This may need to be called after a major update, " +
+          "or after updating markdown files outside of obsidian."
+      )
+      .addButton((button) => {
+        button
+          .setButtonText("Re-Index")
+          .setClass("mod-cta")
+          .onClick(async () => {
+            if (button.disabled) {
+              return;
+            }
+            button.setDisabled(true);
+            button.setButtonText("Re-Indexing...");
+            const mdFiles = this.plugin.app.vault.getMarkdownFiles();
+            this.plugin.data.index = (
+              await Promise.all(
+                mdFiles.map(async (file) => {
+                  return await fileReferences(file, this.plugin.app);
+                })
+              )
+            ).flat();
+            await this.plugin.saveStorage();
+            button.setDisabled(false);
+            button.setButtonText("Re-Index");
+          });
+      });
+
     if (Platform.isMobile) {
       new Setting(containerEl)
         .setName("Show Copy Button")
