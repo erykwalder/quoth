@@ -83,10 +83,16 @@ function copyReference(rb: refBuilder): void {
 }
 
 function getSourceRange(rb: refBuilder): PosRange {
+  if (!rb.editor.somethingSelected()) {
+    throw new Error("Nothing is selected");
+  }
   return PosRange.fromEditorSelection(rb.editor.listSelections()[0]);
 }
 
 function getPreviewRange(rb: refBuilder): PosRange {
+  if (!isTextSelected()) {
+    throw new Error("Nothing is selected");
+  }
   const selectedRegex = rangeRegex(getSelectedRange());
   const match = rb.editor.getValue().match(selectedRegex);
   if (!match) {
