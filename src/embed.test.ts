@@ -1,4 +1,4 @@
-import { parse, Embed } from "./parse";
+import { parse, Embed } from "./embed";
 import { PosRange, StringRange, WholeString } from "./range";
 
 describe("parser", () => {

@@ -2,7 +2,7 @@ import { Platform, Plugin, PluginSettingTab, Setting } from "obsidian";
 import addIcons from "./addIcons";
 import { checkCopyReference, CopySettings } from "./copyReference";
 import copyButton from "./copyButton";
-import { EmbedDisplay } from "./parse";
+import { EmbedDisplay } from "./embed";
 import { quothProcessor } from "./processor";
 import { selectListener } from "./selection";
 

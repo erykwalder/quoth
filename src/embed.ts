@@ -10,16 +10,43 @@ export type Embed = {
   display: EmbedDisplay;
 };
 
+const DEFAULT_JOIN = ", ";
+
 export type EmbedDisplay = "embedded" | "inline";
+const DEFAULT_DISPLAY: EmbedDisplay = "embedded";
 
 export type EmbedOptions = {
   title: boolean;
   author: boolean;
 };
 
-type LineParser = (text: string, data: Embed) => void;
+export function serialize(embed: Embed): string {
+  let ref = "```quoth\n";
+  ref += `path: [[${embed.file}${embed.subpath}]]\n`;
+  if (embed.ranges.length > 0) {
+    ref += `ranges: ${embed.ranges.map((r) => r.toString()).join(", ")}\n`;
+  }
+  if (embed.join !== DEFAULT_JOIN) {
+    ref += `join: ${JSON.stringify(embed.join)}\n`;
+  }
+  if (embed.display !== DEFAULT_DISPLAY) {
+    ref += `display: ${embed.display}\n`;
+  }
+  if (embed.show.author || embed.show.title) {
+    const show: string[] = [];
+    if (embed.show.author) {
+      show.push("author");
+    }
+    if (embed.show.title) {
+      show.push("title");
+    }
+    ref += `show: ${show.join(", ")}\n`;
+  }
+  ref += "```";
+  return ref;
+}
 
-export const parse = (text: string): Embed => {
+export function parse(text: string): Embed {
   const embedData: Embed = {
     file: "",
     subpath: "",
@@ -29,7 +56,7 @@ export const parse = (text: string): Embed => {
       title: false,
       author: false,
     },
-    display: "embedded",
+    display: DEFAULT_DISPLAY,
   };
 
   // Match: settingName: setting value
@@ -45,8 +72,9 @@ export const parse = (text: string): Embed => {
   }
 
   return embedData;
-};
+}
 
+type LineParser = (text: string, data: Embed) => void;
 const lineParsers: { [key: string]: LineParser } = {
   path: (text: string, data: Embed) => {
     // Match: [[filename#heading#^blockid]]

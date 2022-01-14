@@ -11,7 +11,7 @@ import { Range, PosRange, StringRange, WholeString } from "./range";
 import { isUnique, uniqueStrRange } from "./stringSearch";
 import getSelectedRange, { isTextSelected } from "./selection";
 import { rangeRegex } from "./rangeRegex";
-import { EmbedDisplay, EmbedOptions } from "./parse";
+import { Embed, EmbedDisplay, EmbedOptions, serialize } from "./embed";
 
 export interface CopySettings {
   defaultDisplay?: EmbedDisplay;
@@ -127,28 +127,20 @@ function getBestRange(
 }
 
 function buildReference(rb: refBuilder): string {
-  let ref = "```quoth\n";
-  ref += `path: ${rb.app.fileManager.generateMarkdownLink(
-    rb.file,
-    "/",
-    rb.subpath
-  )}\n`;
+  const embed: Embed = {
+    file: rb.app.metadataCache.fileToLinktext(rb.file, "/", true),
+    subpath: rb.subpath,
+    ranges: [],
+    join: ", ",
+    show: {
+      author: false,
+      title: false,
+      ...rb.settings.defaultShow,
+    },
+    display: rb.settings.defaultDisplay || "embedded",
+  };
   if (rb.range) {
-    ref += `ranges: ${rb.range.toString()}\n`;
+    embed.ranges.push(rb.range);
   }
-  if (rb.settings.defaultDisplay) {
-    ref += `display: ${rb.settings.defaultDisplay}\n`;
-  }
-  if (rb.settings.defaultShow.author || rb.settings.defaultShow.title) {
-    const show: string[] = [];
-    if (rb.settings.defaultShow.author) {
-      show.push("author");
-    }
-    if (rb.settings.defaultShow.title) {
-      show.push("title");
-    }
-    ref += `show: ${show.join(", ")}\n`;
-  }
-  ref += "```";
-  return ref;
+  return serialize(embed);
 }

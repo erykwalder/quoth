@@ -9,7 +9,7 @@ import {
   TFile,
 } from "obsidian";
 import { extractRangeWithContext, normalizeMarkdown } from "./markdown";
-import { Embed, EmbedDisplay, EmbedOptions, parse } from "./parse";
+import { Embed, EmbedDisplay, EmbedOptions, parse } from "./embed";
 
 interface Quote {
   file: TFile;
