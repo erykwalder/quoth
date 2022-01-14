@@ -8,7 +8,20 @@ export function scopeSubpath(cache: CachedMetadata, range: PosRange): string {
   }
   const headings = getParentHeadings(cache.headings, range);
   if (headings.length > 0) {
-    return "#" + headings.map((h) => h.heading).join("#");
+    let uniqueLen = 1;
+    while (!isUniquePath(cache.headings, headings.slice(-uniqueLen))) {
+      uniqueLen += 1;
+      if (uniqueLen > headings.length) {
+        return "";
+      }
+    }
+    return (
+      "#" +
+      headings
+        .slice(-uniqueLen)
+        .map((h) => h.heading)
+        .join("#")
+    );
   }
   return "";
 }
@@ -46,7 +59,33 @@ export function getParentHeadings(
       }
     }
   }
+
   return parents;
+}
+
+function isUniquePath(
+  allHeadings: HeadingCache[],
+  path: HeadingCache[]
+): boolean {
+  let found = 0;
+  let level = [];
+  let pathIdx = 0;
+  for (let i = 0; i < allHeadings.length; i++) {
+    if (allHeadings[i].heading === path[pathIdx].heading) {
+      if (pathIdx === path.length - 1) {
+        found += 1;
+        level = [];
+        pathIdx = 0;
+      } else {
+        level.push(allHeadings[i].level);
+        pathIdx += 1;
+      }
+    } else if (allHeadings[i].level <= level.last()) {
+      pathIdx -= 1;
+      level.pop();
+    }
+  }
+  return found <= 1;
 }
 
 function indexOfLastHeading(

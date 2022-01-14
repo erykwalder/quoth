@@ -1,5 +1,5 @@
-import { BlockCache, HeadingCache } from "obsidian";
-import { getContainingBlock, getParentHeadings } from "./subpath";
+import { BlockCache, CachedMetadata, HeadingCache } from "obsidian";
+import { getContainingBlock, getParentHeadings, scopeSubpath } from "./subpath";
 import { PosRange } from "./range";
 
 const exampleText = `Pre-heading text.
@@ -14,6 +14,24 @@ TextD
 ## Second Level Three
 Text E
 `;
+
+const dupeExampleText = `# Section 1
+## A
+### 1
+Test1
+### 2
+Test2
+## B
+### 1
+Test3
+# Section 2
+## A
+### 1
+Test4
+# Not Unique
+Test5
+# Not Unique
+Test 6`;
 
 interface testCache {
   headings: HeadingCache[];
@@ -62,6 +80,74 @@ function buildCache(text: string): testCache {
 }
 
 const exampleCache: testCache = buildCache(exampleText);
+const dupeCache = buildCache(dupeExampleText);
+
+describe(scopeSubpath, () => {
+  it("returns empty string when no container", () => {
+    expect(
+      scopeSubpath(
+        exampleCache as CachedMetadata,
+        new PosRange({ line: 0, ch: 0 }, { line: 0, ch: 5 })
+      )
+    ).toBe("");
+  });
+  it("returns empty string when no unique headings", () => {
+    expect(
+      scopeSubpath(
+        dupeCache as CachedMetadata,
+        new PosRange({ line: 14, ch: 0 }, { line: 14, ch: 5 })
+      )
+    ).toBe("");
+  });
+  it("returns block id when possible", () => {
+    expect(
+      scopeSubpath(
+        exampleCache as CachedMetadata,
+        new PosRange({ line: 6, ch: 0 }, { line: 1, ch: 8 })
+      )
+    ).toBe("#^ablockid");
+  });
+  it("returns last heading when unique", () => {
+    expect(
+      scopeSubpath(
+        exampleCache as CachedMetadata,
+        new PosRange({ line: 2, ch: 0 }, { line: 2, ch: 5 })
+      )
+    ).toBe("#First Level");
+    expect(
+      scopeSubpath(
+        exampleCache as CachedMetadata,
+        new PosRange({ line: 4, ch: 0 }, { line: 4, ch: 5 })
+      )
+    ).toBe("#Second Level One");
+    expect(
+      scopeSubpath(
+        dupeCache as CachedMetadata,
+        new PosRange({ line: 5, ch: 0 }, { line: 5, ch: 5 })
+      )
+    ).toBe("#2");
+  });
+  it("returns multiple headings until path is unique", () => {
+    expect(
+      scopeSubpath(
+        dupeCache as CachedMetadata,
+        new PosRange({ line: 3, ch: 0 }, { line: 3, ch: 5 })
+      )
+    ).toBe("#Section 1#A#1");
+    expect(
+      scopeSubpath(
+        dupeCache as CachedMetadata,
+        new PosRange({ line: 12, ch: 0 }, { line: 12, ch: 5 })
+      )
+    ).toBe("#Section 2#A#1");
+    expect(
+      scopeSubpath(
+        dupeCache as CachedMetadata,
+        new PosRange({ line: 8, ch: 0 }, { line: 8, ch: 5 })
+      )
+    ).toBe("#B#1");
+  });
+});
 
 describe(getContainingBlock, () => {
   it("returns null when blocks is null", () => {
