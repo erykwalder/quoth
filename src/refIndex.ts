@@ -106,3 +106,14 @@ export async function updateReferences(
     await app.vault.modify(refFile, refData);
   }
 }
+
+export function referencingFiles(
+  refs: ReferenceItem[],
+  source: TFile
+): string[] {
+  const set = new Set<string>();
+  refs
+    .filter((r) => r.sourceFile === source.path)
+    .forEach((r) => set.add(r.refFile));
+  return Array.from(set);
+}

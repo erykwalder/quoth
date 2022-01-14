@@ -1,4 +1,5 @@
 import {
+  MarkdownView,
   Platform,
   Plugin,
   PluginSettingTab,
@@ -17,6 +18,7 @@ import {
   dirtyReferences,
   fileReferences,
   ReferenceItem,
+  referencingFiles,
   renameFileInReferences,
   updateReferences,
 } from "./refIndex";
@@ -119,6 +121,19 @@ export default class QuothPlugin extends Plugin {
             this.saveStorage();
           }
         }
+      })
+    );
+
+    this.registerEvent(
+      this.app.metadataCache.on("changed", (file: TFile) => {
+        const refFiles = referencingFiles(this.data.index, file);
+        const openLeafs = this.app.workspace.getLeavesOfType("markdown");
+        openLeafs.forEach((leaf) => {
+          const view = leaf.view as MarkdownView;
+          if (refFiles.includes(view.file.path)) {
+            view.previewMode.rerender(true);
+          }
+        });
       })
     );
   }
