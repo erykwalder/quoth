@@ -32,16 +32,21 @@ All the fields in the code block can be seen below:
     show: author, title
     ```
 
-| Line      | Syntax                                                     | Description                                                                                                                                   | Default    |
-| --------- | ---------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------- | ---------- |
-| `path`    | `[[filename]]`, `[[file#heading]]`, or `[[file#^blockid]]` | **Required.** The path to the content that you want to include, link an internal obsidian link.                                               | None       |
-| `file`    | `[[filename]]`                                             | **Deprecated. Use path instead.** The filename of a markdown file in internal link syntax.                                                    | None       |
-| `heading` | `#heading1#heading2`                                       | **Deprecated. Use path instead.** The parent headings of an embed. These are case sensitive. Multiple can be chained for greater specificity. | None       |
-| `block`   | `^blockid`                                                 | **Deprecated. Use path instead.** The block id containing the quote.                                                                          | None       |
-| `ranges`  | `"text" to "text"` or `line:col to line:col`               | The part of the document you would like to embed. Multiple ranges can be joined with `,`.                                                     | None       |
-| `join`    | `"; "`                                                     | How to combine multiple ranges.                                                                                                               | `" ... "`  |
-| `display` | `embedded` or `inline`                                     | How to display the embed.                                                                                                                     | `embedded` |
-| `show`    | `author` and/or `title`                                    | Whether to include the source author or title. Multiple options can be joined with `,`.                                                       | None       |
+| Line      | Syntax                                                     | Description                                                                                     | Default    |
+| --------- | ---------------------------------------------------------- | ----------------------------------------------------------------------------------------------- | ---------- |
+| `path`    | `[[filename]]`, `[[file#heading]]`, or `[[file#^blockid]]` | **Required.** The path to the content that you want to include, link an internal obsidian link. | None       |
+| `ranges`  | `"text" to "text"` or `line:col to line:col`               | The part of the document you would like to embed. Multiple ranges can be joined with `,`.       | None       |
+| `join`    | `"; "`                                                     | How to combine multiple ranges.                                                                 | `" ... "`  |
+| `display` | `embedded` or `inline`                                     | How to display the embed.                                                                       | `embedded` |
+| `show`    | `author` and/or `title`                                    | Whether to include the source author or title. Multiple options can be joined with `,`.         | None       |
+
+### Deprecated Fields
+
+| Line      | Syntax               | Description                                                                                                                                   | Default |
+| --------- | -------------------- | --------------------------------------------------------------------------------------------------------------------------------------------- | ------- |
+| `file`    | `[[filename]]`       | **Deprecated. Use path instead.** The filename of a markdown file in internal link syntax.                                                    | None    |
+| `heading` | `#heading1#heading2` | **Deprecated. Use path instead.** The parent headings of an embed. These are case sensitive. Multiple can be chained for greater specificity. | None    |
+| `block`   | `^blockid`           | **Deprecated. Use path instead.** The block id containing the quote.                                                                          | None    |
 
 ## Limitations
 
