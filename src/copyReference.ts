@@ -111,6 +111,9 @@ function getBestRange(
   selectedText: string,
   selectedRange: PosRange
 ): Range {
+  if (doc === selectedText) {
+    return null;
+  }
   if (isUnique(doc, selectedText)) {
     const points = uniqueStrRange(doc, selectedText);
     if (points.length === 1) {
@@ -130,7 +133,9 @@ function buildReference(rb: refBuilder): string {
     "/",
     rb.subpath
   )}\n`;
-  ref += `ranges: ${rb.range.toString()}\n`;
+  if (rb.range) {
+    ref += `ranges: ${rb.range.toString()}\n`;
+  }
   if (rb.settings.defaultDisplay) {
     ref += `display: ${rb.settings.defaultDisplay}\n`;
   }
