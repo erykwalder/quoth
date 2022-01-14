@@ -1,13 +1,6 @@
 import { extractRangeWithContext, normalizeMarkdown } from "./markdown";
 import { WholeString } from "./range";
 
-Array.prototype.last = function (): unknown {
-  if (this.length > 0) {
-    return this[this.length - 1];
-  }
-  return undefined;
-};
-
 // text, matched range, result
 type extractTest = [string, string, string];
 
