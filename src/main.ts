@@ -1,13 +1,29 @@
-import { Platform, Plugin, PluginSettingTab, Setting } from "obsidian";
+import {
+  Platform,
+  Plugin,
+  PluginSettingTab,
+  Setting,
+  TAbstractFile,
+  TFile,
+} from "obsidian";
 import addIcons from "./addIcons";
 import { checkCopyReference, CopySettings } from "./copyReference";
 import copyButton from "./copyButton";
 import { EmbedDisplay } from "./embed";
 import { quothProcessor } from "./processor";
 import { selectListener } from "./selection";
+import {
+  deleteFileReferences,
+  dirtyReferences,
+  fileReferences,
+  ReferenceItem,
+  renameFileInReferences,
+  updateReferences,
+} from "./refIndex";
 
 interface QuothData {
   copySettings: CopySettings;
+  index: ReferenceItem[];
 }
 
 const DEFAULT_DATA: QuothData = {
@@ -18,6 +34,7 @@ const DEFAULT_DATA: QuothData = {
     },
     showMobileButton: false,
   },
+  index: [],
 };
 
 export default class QuothPlugin extends Plugin {
@@ -60,6 +77,50 @@ export default class QuothPlugin extends Plugin {
         copyButton.bind(null, this.app, this.data.copySettings)
       );
     }
+
+    this.registerEvent(
+      this.app.vault.on(
+        "rename",
+        async (file: TAbstractFile, oldPath: string) => {
+          if (file instanceof TFile) {
+            this.data.index = renameFileInReferences(
+              this.data.index,
+              file as TFile,
+              oldPath
+            );
+            const dirtyRefs = dirtyReferences(this.data.index, file as TFile);
+            await this.saveStorage();
+            await updateReferences(dirtyRefs, this.app, file as TFile);
+          }
+        }
+      )
+    );
+
+    this.registerEvent(
+      this.app.vault.on("modify", async (file: TAbstractFile) => {
+        if (file instanceof TFile) {
+          let indexChanged = false;
+          let count = this.data.index.length;
+
+          this.data.index = deleteFileReferences(
+            this.data.index,
+            file as TFile
+          );
+          indexChanged = count !== this.data.index.length;
+          count = this.data.index.length;
+
+          this.data.index = [
+            ...this.data.index,
+            ...(await fileReferences(file as TFile, this.app)),
+          ];
+          indexChanged ||= count !== this.data.index.length;
+
+          if (indexChanged) {
+            this.saveStorage();
+          }
+        }
+      })
+    );
   }
 
   async loadStorage() {

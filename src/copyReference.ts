@@ -11,7 +11,14 @@ import { Range, PosRange, StringRange, WholeString } from "./range";
 import { isUnique, uniqueStrRange } from "./stringSearch";
 import getSelectedRange, { isTextSelected } from "./selection";
 import { rangeRegex } from "./rangeRegex";
-import { Embed, EmbedDisplay, EmbedOptions, serialize } from "./embed";
+import {
+  DEFAULT_DISPLAY,
+  DEFAULT_JOIN,
+  Embed,
+  EmbedDisplay,
+  EmbedOptions,
+  serialize,
+} from "./embed";
 
 export interface CopySettings {
   defaultDisplay?: EmbedDisplay;
@@ -131,13 +138,13 @@ function buildReference(rb: refBuilder): string {
     file: rb.app.metadataCache.fileToLinktext(rb.file, "/", true),
     subpath: rb.subpath,
     ranges: [],
-    join: ", ",
+    join: DEFAULT_JOIN,
     show: {
       author: false,
       title: false,
       ...rb.settings.defaultShow,
     },
-    display: rb.settings.defaultDisplay || "embedded",
+    display: rb.settings.defaultDisplay || DEFAULT_DISPLAY,
   };
   if (rb.range) {
     embed.ranges.push(rb.range);

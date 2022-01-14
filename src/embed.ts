@@ -10,10 +10,10 @@ export type Embed = {
   display: EmbedDisplay;
 };
 
-const DEFAULT_JOIN = ", ";
+export const DEFAULT_JOIN = " ... ";
 
 export type EmbedDisplay = "embedded" | "inline";
-const DEFAULT_DISPLAY: EmbedDisplay = "embedded";
+export const DEFAULT_DISPLAY: EmbedDisplay = "embedded";
 
 export type EmbedOptions = {
   title: boolean;
@@ -51,7 +51,7 @@ export function parse(text: string): Embed {
     file: "",
     subpath: "",
     ranges: [],
-    join: " ... ",
+    join: DEFAULT_JOIN,
     show: {
       title: false,
       author: false,
