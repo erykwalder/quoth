@@ -1,5 +1,22 @@
 # Changelog
 
+### version 0.3.0
+
+New Features:
+
+- Path line in code block combines file, heading, and block
+- Scoping quoth to a block ID
+- Title in a quoth block is now a link
+
+Improvements:
+
+- Copy reference only copies as many headings as needed to be unique
+
+Fixes:
+
+- No longer attempt to copy when command is called with nothing selected
+- Copy reference doesn't use headers to scope if they are not unique
+
 ### version 0.2.1
 
 Fixes:
