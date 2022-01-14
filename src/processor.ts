@@ -65,7 +65,7 @@ async function assembleQuote(
     subpath: embed.subpath,
     markdown: quote,
     title: file.basename,
-    author: fileCache.frontmatter?.author as string | undefined,
+    author: fileCache?.frontmatter?.author as string | undefined,
   };
 }
 
