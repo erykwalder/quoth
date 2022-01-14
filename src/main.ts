@@ -6,11 +6,11 @@ import { EmbedDisplay } from "./parse";
 import { quothProcessor } from "./processor";
 import { selectListener } from "./selection";
 
-interface PluginSettings {
+interface QuothData {
   copySettings: CopySettings;
 }
 
-const DEFAULT_SETTINGS: PluginSettings = {
+const DEFAULT_DATA: QuothData = {
   copySettings: {
     defaultShow: {
       title: false,
@@ -21,10 +21,10 @@ const DEFAULT_SETTINGS: PluginSettings = {
 };
 
 export default class QuothPlugin extends Plugin {
-  settings: PluginSettings;
+  data: QuothData;
 
   async onload() {
-    await this.loadSettings();
+    await this.loadStorage();
 
     addIcons();
 
@@ -41,7 +41,7 @@ export default class QuothPlugin extends Plugin {
       checkCallback: checkCopyReference.bind(
         null,
         this.app,
-        this.settings.copySettings
+        this.data.copySettings
       ),
       hotkeys: [
         {
@@ -57,17 +57,29 @@ export default class QuothPlugin extends Plugin {
       this.registerDomEvent(
         document,
         "selectionchange",
-        copyButton.bind(null, this.app, this.settings.copySettings)
+        copyButton.bind(null, this.app, this.data.copySettings)
       );
     }
   }
 
-  async loadSettings() {
-    this.settings = Object.assign({}, DEFAULT_SETTINGS, await this.loadData());
+  async loadStorage() {
+    const loaded = await this.loadData();
+    this.data = {
+      ...DEFAULT_DATA,
+      ...loaded,
+      copySettings: {
+        ...DEFAULT_DATA.copySettings,
+        ...loaded?.copySettings,
+        defaultShow: {
+          ...DEFAULT_DATA.copySettings.defaultShow,
+          ...loaded?.copySettings?.defaultShow,
+        },
+      },
+    };
   }
 
-  async saveSettings() {
-    await this.saveData(this.settings);
+  async saveStorage() {
+    await this.saveData(this.data);
   }
 }
 
@@ -96,10 +108,10 @@ class QuothSettingTab extends PluginSettingTab {
         )
         .addToggle((toggle) => {
           toggle
-            .setValue(this.plugin.settings.copySettings.showMobileButton)
+            .setValue(this.plugin.data.copySettings.showMobileButton)
             .onChange(async (value) => {
-              this.plugin.settings.copySettings.showMobileButton = value;
-              await this.plugin.saveSettings();
+              this.plugin.data.copySettings.showMobileButton = value;
+              await this.plugin.saveStorage();
             });
         });
     }
@@ -114,31 +126,31 @@ class QuothSettingTab extends PluginSettingTab {
     new Setting(containerEl).setName("Display Style:").addDropdown((drop) =>
       drop
         .addOptions({ null: "", embedded: "Embedded", inline: "Inline" })
-        .setValue(this.plugin.settings.copySettings.defaultDisplay)
+        .setValue(this.plugin.data.copySettings.defaultDisplay)
         .onChange(async (value) => {
           if (value == "null") {
-            delete this.plugin.settings.copySettings.defaultDisplay;
+            delete this.plugin.data.copySettings.defaultDisplay;
           } else {
-            this.plugin.settings.copySettings.defaultDisplay =
+            this.plugin.data.copySettings.defaultDisplay =
               value as EmbedDisplay;
           }
-          await this.plugin.saveSettings();
+          await this.plugin.saveStorage();
         })
     );
     new Setting(containerEl).setName("Show Author:").addToggle((toggle) =>
       toggle
-        .setValue(this.plugin.settings.copySettings.defaultShow.author)
+        .setValue(this.plugin.data.copySettings.defaultShow.author)
         .onChange(async (value) => {
-          this.plugin.settings.copySettings.defaultShow.author = value;
-          await this.plugin.saveSettings();
+          this.plugin.data.copySettings.defaultShow.author = value;
+          await this.plugin.saveStorage();
         })
     );
     new Setting(containerEl).setName("Show Title:").addToggle((toggle) =>
       toggle
-        .setValue(this.plugin.settings.copySettings.defaultShow.title)
+        .setValue(this.plugin.data.copySettings.defaultShow.title)
         .onChange(async (value) => {
-          this.plugin.settings.copySettings.defaultShow.title = value;
-          await this.plugin.saveSettings();
+          this.plugin.data.copySettings.defaultShow.title = value;
+          await this.plugin.saveStorage();
         })
     );
   }
