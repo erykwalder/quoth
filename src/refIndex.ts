@@ -102,25 +102,6 @@ export async function updateReferences(
     })
   );
 }
-export async function deleteReferences(
-  refsByFile: Record<string, ReferenceItem[]>,
-  app: App
-): Promise<void> {
-  await Promise.all(
-    map(refsByFile, async (refPath: string, refs: ReferenceItem[]) => {
-      const refFile = app.vault.getAbstractFileByPath(refPath) as TFile;
-      let refData = await app.vault.cachedRead(refFile);
-      const offsets = quothOffsets(refData);
-      // sort for safe string slicing
-      refs.sort((a, b) => b.refIdx - a.refIdx);
-      refs.forEach((ref) => {
-        const { start, end } = offsets[ref.refIdx];
-        refData = refData.slice(0, Math.max(start - 1, 0)) + refData.slice(end);
-      });
-      await app.vault.modify(refFile, refData);
-    })
-  );
-}
 
 function quothOffsets(fileData: string): { start: number; end: number }[] {
   const startRegex = /^ {0,3}`{3,}quoth/gm;

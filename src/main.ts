@@ -13,7 +13,6 @@ import { EmbedDisplay } from "./embed";
 import { quothProcessor } from "./processor";
 import { selectListener } from "./selection";
 import {
-  deleteReferences,
   deleteReferencesInFile,
   dirtyReferences,
   fileInRefs,
@@ -105,9 +104,7 @@ export default class QuothPlugin extends Plugin {
             this.data.index,
             file as TFile
           );
-          const dirtyRefs = dirtyReferences(this.data.index, file as TFile);
           await this.saveStorage();
-          await deleteReferences(dirtyRefs, this.app);
         }
       })
     );
