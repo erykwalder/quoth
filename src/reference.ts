@@ -2,7 +2,7 @@ import { App, TFile } from "obsidian";
 import { parse, serialize } from "./embed";
 import { escapeRegex } from "./escapeRegex";
 
-export interface ReferenceItem {
+export interface Reference {
   sourceFile: string;
   subPath: string;
   ranges: string[];
@@ -10,24 +10,24 @@ export interface ReferenceItem {
   refIdx: number;
 }
 
-export function fileInRefs(refs: ReferenceItem[], path: string): boolean {
+export function fileInRefs(refs: Reference[], path: string): boolean {
   return (
     refs.find((r) => r.refFile === path || r.sourceFile === path) !== undefined
   );
 }
 
 export function deleteReferencesInFile(
-  refs: ReferenceItem[],
+  refs: Reference[],
   file: TFile
-): ReferenceItem[] {
+): Reference[] {
   return refs.filter((ref) => ref.refFile !== file.path);
 }
 
 export async function fileReferences(
   file: TFile,
   app: App
-): Promise<ReferenceItem[]> {
-  const refs: ReferenceItem[] = [];
+): Promise<Reference[]> {
+  const refs: Reference[] = [];
   const fileData = await app.vault.cachedRead(file as TFile);
   quothOffsets(fileData).forEach((offset, idx) => {
     const embed = parse(fileData.slice(offset.start, offset.end));
@@ -49,10 +49,10 @@ export async function fileReferences(
 }
 
 export function renameFileInReferences(
-  refs: ReferenceItem[],
+  refs: Reference[],
   sourceFile: TFile,
   oldPath: string
-): ReferenceItem[] {
+): Reference[] {
   return refs.map((ref) => {
     if (ref.sourceFile === oldPath) {
       ref = { ...ref, sourceFile: sourceFile.path };
@@ -65,10 +65,10 @@ export function renameFileInReferences(
 }
 
 export function dirtyReferences(
-  refs: ReferenceItem[],
+  refs: Reference[],
   sourceFile: TFile
-): Record<string, ReferenceItem[]> {
-  const refsByFile: Record<string, ReferenceItem[]> = {};
+): Record<string, Reference[]> {
+  const refsByFile: Record<string, Reference[]> = {};
   refs
     .filter((ref) => ref.sourceFile === sourceFile.path)
     .forEach((r) => {
@@ -79,13 +79,13 @@ export function dirtyReferences(
 }
 
 export async function updateReferences(
-  refsByFile: Record<string, ReferenceItem[]>,
+  refsByFile: Record<string, Reference[]>,
   app: App,
   sourceFile: TFile,
   oldPath: string
 ): Promise<void> {
   await Promise.all(
-    map(refsByFile, async (refPath: string, refs: ReferenceItem[]) => {
+    map(refsByFile, async (refPath: string, refs: Reference[]) => {
       const refFile = app.vault.getAbstractFileByPath(refPath) as TFile;
       let refData = await safeReadFile(app, refFile, oldPath);
       const offsets = quothOffsets(refData);
@@ -167,8 +167,8 @@ function fileRegex(path: string): string {
 }
 
 function map<T>(
-  refsByFile: Record<string, ReferenceItem[]>,
-  fn: (refPath: string, refs: ReferenceItem[]) => T
+  refsByFile: Record<string, Reference[]>,
+  fn: (refPath: string, refs: Reference[]) => T
 ): T[] {
   const results = [];
   for (const file in refsByFile) {

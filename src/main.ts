@@ -17,14 +17,14 @@ import {
   dirtyReferences,
   fileInRefs,
   fileReferences,
-  ReferenceItem,
+  Reference,
   renameFileInReferences,
   updateReferences,
-} from "./refIndex";
+} from "./reference";
 
 interface QuothData {
   copySettings: CopySettings;
-  index: ReferenceItem[];
+  index: Reference[];
 }
 
 const DEFAULT_DATA: QuothData = {
