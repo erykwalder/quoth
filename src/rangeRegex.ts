@@ -1,3 +1,5 @@
+import { escapeRegex } from "./escapeRegex";
+
 export function rangeRegex(range: Range): RegExp {
   return new RegExp(
     getRangePrefix(range) +
@@ -196,10 +198,4 @@ function appendTextNode(text: string[], node: Text, range: Range): void {
     endOffset = range.endOffset;
   }
   text.push(escapeRegex(node.textContent.slice(startOffset, endOffset)));
-}
-
-// from MDN: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Regular_Expressions#escaping
-function escapeRegex(re: string): string {
-  // $& means the whole matched string
-  return re.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 }

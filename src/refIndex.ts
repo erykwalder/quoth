@@ -1,5 +1,6 @@
-import { App, iterateCacheRefs, TFile } from "obsidian";
+import { App, TFile } from "obsidian";
 import { parse, serialize } from "./embed";
+import { escapeRegex } from "./escapeRegex";
 
 export interface ReferenceItem {
   sourceFile: string;
@@ -9,7 +10,13 @@ export interface ReferenceItem {
   refIdx: number;
 }
 
-export function deleteFileReferences(
+export function fileInRefs(refs: ReferenceItem[], path: string): boolean {
+  return (
+    refs.find((r) => r.refFile === path || r.sourceFile === path) !== undefined
+  );
+}
+
+export function deleteReferencesInFile(
   refs: ReferenceItem[],
   file: TFile
 ): ReferenceItem[] {
@@ -77,83 +84,114 @@ export async function updateReferences(
   sourceFile: TFile,
   oldPath: string
 ): Promise<void> {
-  const updaters = [];
-  for (const refPath in refsByFile) {
-    updaters.push(
-      updateFileReferences(
-        refPath,
-        refsByFile[refPath],
-        app,
-        sourceFile,
-        oldPath
-      )
-    );
-  }
-  await Promise.all(updaters);
+  await Promise.all(
+    map(refsByFile, async (refPath: string, refs: ReferenceItem[]) => {
+      const refFile = app.vault.getAbstractFileByPath(refPath) as TFile;
+      let refData = await safeReadFile(app, refFile, oldPath);
+      const offsets = quothOffsets(refData);
+      // sort for safe string slicing
+      refs.sort((a, b) => b.refIdx - a.refIdx);
+      refs.forEach((ref) => {
+        const { start, end } = offsets[ref.refIdx];
+        const embed = parse(refData.slice(start, end));
+        embed.file = app.metadataCache.fileToLinktext(sourceFile, refPath);
+        refData =
+          refData.slice(0, start) + serialize(embed) + refData.slice(end);
+      });
+      await app.vault.modify(refFile, refData);
+    })
+  );
 }
-
-async function updateFileReferences(
-  refPath: string,
-  refs: ReferenceItem[],
-  app: App,
-  sourceFile: TFile,
-  oldPath: string
+export async function deleteReferences(
+  refsByFile: Record<string, ReferenceItem[]>,
+  app: App
 ): Promise<void> {
-  const refFile = app.vault.getAbstractFileByPath(refPath) as TFile;
-  await safeToUpdate(app, refFile, oldPath);
-  let refData = await app.vault.cachedRead(refFile);
-  const offsets = quothOffsets(refData);
-  // sort for safe string slicing
-  refs.sort((a, b) => b.refIdx - a.refIdx);
-  refs.forEach((ref) => {
-    const { start, end } = offsets[ref.refIdx];
-    const embed = parse(refData.slice(start, end));
-    embed.file = app.metadataCache.fileToLinktext(sourceFile, refPath);
-    refData = refData.slice(0, start) + serialize(embed) + refData.slice(end);
-  });
-  await app.vault.modify(refFile, refData);
+  await Promise.all(
+    map(refsByFile, async (refPath: string, refs: ReferenceItem[]) => {
+      const refFile = app.vault.getAbstractFileByPath(refPath) as TFile;
+      let refData = await app.vault.cachedRead(refFile);
+      const offsets = quothOffsets(refData);
+      // sort for safe string slicing
+      refs.sort((a, b) => b.refIdx - a.refIdx);
+      refs.forEach((ref) => {
+        const { start, end } = offsets[ref.refIdx];
+        refData = refData.slice(0, Math.max(start - 1, 0)) + refData.slice(end);
+      });
+      await app.vault.modify(refFile, refData);
+    })
+  );
 }
 
 function quothOffsets(fileData: string): { start: number; end: number }[] {
-  const regex = /^ {0,3}```quoth/gm;
+  const startRegex = /^ {0,3}`{3,}quoth/gm;
+  const endRegex = /^ {0,3}`{3,} *$/gm;
   const offsets = [];
-  let res: RegExpExecArray;
-  while ((res = regex.exec(fileData))) {
-    offsets.push({
-      start: res.index,
-      end: fileData.indexOf("\n```\n", res.index) + 4,
-    });
+  let res;
+  while ((res = startRegex.exec(fileData))) {
+    const start = res.index;
+    endRegex.lastIndex = start;
+    if ((res = endRegex.exec(fileData))) {
+      const end = res.index + res[0].length;
+      startRegex.lastIndex = end;
+      offsets.push({ start, end });
+    }
   }
   return offsets;
 }
 
 const CHECK_SAFE_ATTEMPTS = 10;
 const CHECK_SAFE_WAIT = 50;
-async function safeToUpdate(
+async function safeReadFile(
   app: App,
   file: TFile,
   oldPath: string
-): Promise<void> {
-  const oldLinks = pathToLinks(oldPath);
+): Promise<string> {
+  let fileData;
   for (let i = 0; i < CHECK_SAFE_ATTEMPTS; i++) {
-    const refCache = await app.metadataCache.getFileCache(file);
-    const staleLinks = iterateCacheRefs(refCache, (ref) =>
-      oldLinks.includes(ref.link)
-    );
-    if (!staleLinks) {
-      return;
+    fileData = await app.vault.cachedRead(file);
+    if (!anyStaleLinks(oldPath, fileData)) {
+      break;
     }
     await new Promise((resolve) =>
       setTimeout(resolve, CHECK_SAFE_WAIT * (i + 1))
     );
   }
+  return fileData;
 }
 
-function pathToLinks(path: string): string[] {
-  const regex = /^(?<parent>\/?(?:[^./]+\/)*)(?<name>[^.]+)(?<ext>(?:\.\w+)+)/;
-  const { parent, name, ext } = path.match(regex).groups;
-  return parent.split("/").flatMap((_, idx, ps) => {
-    const path = ps.slice(idx).join("/");
-    return [path + name, path + name + ext];
-  });
+function anyStaleLinks(oldPath: string, fileData: string): boolean {
+  // match links outside of quoth blocks in capture group
+  const quothMatcher = "(?:^|\\n) {0,3}`{3,}quoth.+?\\n {0,3}`{3,} *(?:$|\\n)";
+  const linkMatcher =
+    "(\\[\\[(?:" + fileRegex(oldPath) + ")(?:\\|[^\\]|]+)?\\]\\])";
+  const regex = new RegExp(quothMatcher + "|" + linkMatcher, "gs");
+  let match;
+  while ((match = regex.exec(fileData))) {
+    if (match[1] !== undefined) {
+      return true;
+    }
+  }
+  return false;
+}
+
+function fileRegex(path: string): string {
+  let prefix = "";
+  path = escapeRegex("/" + path)
+    .replace(/.*?\//g, (match) => {
+      prefix += "(?:";
+      return match + ")?";
+    })
+    .replace(/(\\\.\w+)+$/, "(?:$&)?");
+  return prefix + path;
+}
+
+function map<T>(
+  refsByFile: Record<string, ReferenceItem[]>,
+  fn: (refPath: string, refs: ReferenceItem[]) => T
+): T[] {
+  const results = [];
+  for (const file in refsByFile) {
+    results.push(fn(file, refsByFile[file]));
+  }
+  return results;
 }

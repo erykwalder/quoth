@@ -13,8 +13,10 @@ import { EmbedDisplay } from "./embed";
 import { quothProcessor } from "./processor";
 import { selectListener } from "./selection";
 import {
-  deleteFileReferences,
+  deleteReferences,
+  deleteReferencesInFile,
   dirtyReferences,
+  fileInRefs,
   fileReferences,
   ReferenceItem,
   renameFileInReferences,
@@ -82,7 +84,7 @@ export default class QuothPlugin extends Plugin {
       this.app.vault.on(
         "rename",
         async (file: TAbstractFile, oldPath: string) => {
-          if (file instanceof TFile) {
+          if (file instanceof TFile && fileInRefs(this.data.index, oldPath)) {
             this.data.index = renameFileInReferences(
               this.data.index,
               file as TFile,
@@ -97,26 +99,27 @@ export default class QuothPlugin extends Plugin {
     );
 
     this.registerEvent(
-      this.app.vault.on("modify", async (file: TAbstractFile) => {
-        if (file instanceof TFile) {
-          let indexChanged = false;
-          let count = this.data.index.length;
-
-          this.data.index = deleteFileReferences(
+      this.app.vault.on("delete", async (file: TAbstractFile) => {
+        if (file instanceof TFile && fileInRefs(this.data.index, file.path)) {
+          this.data.index = deleteReferencesInFile(
             this.data.index,
             file as TFile
           );
-          indexChanged = count !== this.data.index.length;
-          count = this.data.index.length;
+          const dirtyRefs = dirtyReferences(this.data.index, file as TFile);
+          await this.saveStorage();
+          await deleteReferences(dirtyRefs, this.app);
+        }
+      })
+    );
 
-          this.data.index = [
-            ...this.data.index,
-            ...(await fileReferences(file as TFile, this.app)),
-          ];
-          indexChanged ||= count !== this.data.index.length;
-
-          if (indexChanged) {
-            this.saveStorage();
+    this.registerEvent(
+      this.app.vault.on("modify", async (file: TAbstractFile) => {
+        if (file instanceof TFile) {
+          const refs = deleteReferencesInFile(this.data.index, file as TFile);
+          const fileRefs = await fileReferences(file as TFile, this.app);
+          if (refs.length !== this.data.index.length || fileRefs.length > 0) {
+            this.data.index = [...refs, ...fileRefs];
+            await this.saveStorage();
           }
         }
       })
