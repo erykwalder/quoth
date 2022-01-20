@@ -90,7 +90,7 @@ export default class QuothPlugin extends Plugin {
             );
             const dirtyRefs = dirtyReferences(this.data.index, file as TFile);
             await this.saveStorage();
-            await updateReferences(dirtyRefs, this.app, file as TFile);
+            await updateReferences(dirtyRefs, this.app, file as TFile, oldPath);
           }
         }
       )

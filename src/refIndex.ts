@@ -1,4 +1,4 @@
-import { App, TFile } from "obsidian";
+import { App, iterateCacheRefs, TFile } from "obsidian";
 import { parse, serialize } from "./embed";
 
 export interface ReferenceItem {
@@ -74,26 +74,48 @@ export function dirtyReferences(
 export async function updateReferences(
   refsByFile: Record<string, ReferenceItem[]>,
   app: App,
-  sourceFile: TFile
+  sourceFile: TFile,
+  oldPath: string
 ): Promise<void> {
+  const updaters = [];
   for (const refPath in refsByFile) {
-    const refFile = app.vault.getAbstractFileByPath(refPath) as TFile;
-    let refData = await app.vault.cachedRead(refFile);
-    const offsets = quothOffsets(refData);
-    // sort for safe string slicing
-    refsByFile[refPath].sort((a, b) => b.refIdx - a.refIdx);
-    refsByFile[refPath].forEach((ref) => {
-      const { start, end } = offsets[ref.refIdx];
-      const embed = parse(refData.slice(start, end));
-      embed.file = app.metadataCache.fileToLinktext(sourceFile, refPath);
-      refData = refData.slice(0, start) + serialize(embed) + refData.slice(end);
-    });
-    await app.vault.modify(refFile, refData);
+    updaters.push(
+      updateFileReferences(
+        refPath,
+        refsByFile[refPath],
+        app,
+        sourceFile,
+        oldPath
+      )
+    );
   }
+  await Promise.all(updaters);
+}
+
+async function updateFileReferences(
+  refPath: string,
+  refs: ReferenceItem[],
+  app: App,
+  sourceFile: TFile,
+  oldPath: string
+): Promise<void> {
+  const refFile = app.vault.getAbstractFileByPath(refPath) as TFile;
+  await safeToUpdate(app, refFile, oldPath);
+  let refData = await app.vault.cachedRead(refFile);
+  const offsets = quothOffsets(refData);
+  // sort for safe string slicing
+  refs.sort((a, b) => b.refIdx - a.refIdx);
+  refs.forEach((ref) => {
+    const { start, end } = offsets[ref.refIdx];
+    const embed = parse(refData.slice(start, end));
+    embed.file = app.metadataCache.fileToLinktext(sourceFile, refPath);
+    refData = refData.slice(0, start) + serialize(embed) + refData.slice(end);
+  });
+  await app.vault.modify(refFile, refData);
 }
 
 function quothOffsets(fileData: string): { start: number; end: number }[] {
-  const regex = /^```quoth/gm;
+  const regex = /^ {0,3}```quoth/gm;
   const offsets = [];
   let res: RegExpExecArray;
   while ((res = regex.exec(fileData))) {
@@ -103,4 +125,35 @@ function quothOffsets(fileData: string): { start: number; end: number }[] {
     });
   }
   return offsets;
+}
+
+const CHECK_SAFE_ATTEMPTS = 10;
+const CHECK_SAFE_WAIT = 50;
+async function safeToUpdate(
+  app: App,
+  file: TFile,
+  oldPath: string
+): Promise<void> {
+  const oldLinks = pathToLinks(oldPath);
+  for (let i = 0; i < CHECK_SAFE_ATTEMPTS; i++) {
+    const refCache = await app.metadataCache.getFileCache(file);
+    const staleLinks = iterateCacheRefs(refCache, (ref) =>
+      oldLinks.includes(ref.link)
+    );
+    if (!staleLinks) {
+      return;
+    }
+    await new Promise((resolve) =>
+      setTimeout(resolve, CHECK_SAFE_WAIT * (i + 1))
+    );
+  }
+}
+
+function pathToLinks(path: string): string[] {
+  const regex = /^(?<parent>\/?(?:[^./]+\/)*)(?<name>[^.]+)(?<ext>(?:\.\w+)+)/;
+  const { parent, name, ext } = path.match(regex).groups;
+  return parent.split("/").flatMap((_, idx, ps) => {
+    const path = ps.slice(idx).join("/");
+    return [path + name, path + name + ext];
+  });
 }
