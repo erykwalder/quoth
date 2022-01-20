@@ -1,26 +1,11 @@
-import {
-  Platform,
-  Plugin,
-  PluginSettingTab,
-  Setting,
-  TAbstractFile,
-  TFile,
-} from "obsidian";
+import { Platform, Plugin, PluginSettingTab, Setting } from "obsidian";
 import addIcons from "./addIcons";
 import { checkCopyReference, CopySettings } from "./copyReference";
 import copyButton from "./copyButton";
 import { EmbedDisplay } from "./embed";
 import { quothProcessor } from "./processor";
 import { selectListener } from "./selection";
-import {
-  deleteReferencesInFile,
-  dirtyReferences,
-  fileInRefs,
-  fileReferences,
-  Reference,
-  renameFileInReferences,
-  updateReferences,
-} from "./reference";
+import { fileReferences, IndexListener, Reference } from "./reference";
 
 interface QuothData {
   copySettings: CopySettings;
@@ -79,47 +64,22 @@ export default class QuothPlugin extends Plugin {
       );
     }
 
-    this.registerEvent(
-      this.app.vault.on(
-        "rename",
-        async (file: TAbstractFile, oldPath: string) => {
-          if (file instanceof TFile && fileInRefs(this.data.index, oldPath)) {
-            this.data.index = renameFileInReferences(
-              this.data.index,
-              file as TFile,
-              oldPath
-            );
-            const dirtyRefs = dirtyReferences(this.data.index, file as TFile);
-            await this.saveStorage();
-            await updateReferences(dirtyRefs, this.app, file as TFile, oldPath);
-          }
-        }
-      )
+    const indexListener = new IndexListener(
+      this.app,
+      () => this.data.index,
+      async (refs: Reference[]) => {
+        this.data.index = refs;
+        await this.saveStorage();
+      }
     );
-
     this.registerEvent(
-      this.app.vault.on("delete", async (file: TAbstractFile) => {
-        if (file instanceof TFile && fileInRefs(this.data.index, file.path)) {
-          this.data.index = deleteReferencesInFile(
-            this.data.index,
-            file as TFile
-          );
-          await this.saveStorage();
-        }
-      })
+      this.app.vault.on("rename", indexListener.rename.bind(indexListener))
     );
-
     this.registerEvent(
-      this.app.vault.on("modify", async (file: TAbstractFile) => {
-        if (file instanceof TFile) {
-          const refs = deleteReferencesInFile(this.data.index, file as TFile);
-          const fileRefs = await fileReferences(file as TFile, this.app);
-          if (refs.length !== this.data.index.length || fileRefs.length > 0) {
-            this.data.index = [...refs, ...fileRefs];
-            await this.saveStorage();
-          }
-        }
-      })
+      this.app.vault.on("delete", indexListener.delete.bind(indexListener))
+    );
+    this.registerEvent(
+      this.app.vault.on("modify", indexListener.modify.bind(indexListener))
     );
   }
 

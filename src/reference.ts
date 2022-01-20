@@ -1,4 +1,4 @@
-import { App, TFile } from "obsidian";
+import { App, TAbstractFile, TFile } from "obsidian";
 import { parse, serialize } from "./embed";
 import { escapeRegex } from "./escapeRegex";
 
@@ -10,16 +10,49 @@ export interface Reference {
   refIdx: number;
 }
 
-export function fileInRefs(refs: Reference[], path: string): boolean {
+export class IndexListener {
+  constructor(
+    private app: App,
+    private load: () => Reference[],
+    private save: (refs: Reference[]) => Promise<void>
+  ) {}
+
+  async rename(file: TAbstractFile, oldPath: string) {
+    let refs = this.load();
+    if (file instanceof TFile && fileInRefs(refs, oldPath)) {
+      refs = renameFile(refs, file as TFile, oldPath);
+      await this.save(refs);
+      const dirtyRefs = dirtyReferences(refs, file as TFile);
+      await updateQuothPathInFiles(dirtyRefs, this.app, file as TFile, oldPath);
+    }
+  }
+
+  async delete(file: TAbstractFile) {
+    const refs = this.load();
+    if (file instanceof TFile && fileInRefs(refs, file.path)) {
+      await this.save(filterOutFile(refs, file as TFile));
+    }
+  }
+
+  async modify(file: TAbstractFile) {
+    const refs = this.load();
+    if (file instanceof TFile) {
+      const filtered = filterOutFile(refs, file as TFile);
+      const fileRefs = await fileReferences(file as TFile, this.app);
+      if (filtered.length !== refs.length || fileRefs.length > 0) {
+        this.save([...filtered, ...fileRefs]);
+      }
+    }
+  }
+}
+
+function fileInRefs(refs: Reference[], path: string): boolean {
   return (
     refs.find((r) => r.refFile === path || r.sourceFile === path) !== undefined
   );
 }
 
-export function deleteReferencesInFile(
-  refs: Reference[],
-  file: TFile
-): Reference[] {
+function filterOutFile(refs: Reference[], file: TFile): Reference[] {
   return refs.filter((ref) => ref.refFile !== file.path);
 }
 
@@ -48,7 +81,7 @@ export async function fileReferences(
   return refs;
 }
 
-export function renameFileInReferences(
+function renameFile(
   refs: Reference[],
   sourceFile: TFile,
   oldPath: string
@@ -64,7 +97,7 @@ export function renameFileInReferences(
   });
 }
 
-export function dirtyReferences(
+function dirtyReferences(
   refs: Reference[],
   sourceFile: TFile
 ): Record<string, Reference[]> {
@@ -78,7 +111,7 @@ export function dirtyReferences(
   return refsByFile;
 }
 
-export async function updateReferences(
+async function updateQuothPathInFiles(
   refsByFile: Record<string, Reference[]>,
   app: App,
   sourceFile: TFile,
