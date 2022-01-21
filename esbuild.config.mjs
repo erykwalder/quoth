@@ -19,7 +19,6 @@ esbuild
     external: [
       "obsidian",
       "electron",
-      "codemirror",
       "@codemirror/autocomplete",
       "@codemirror/closebrackets",
       "@codemirror/collab",
