@@ -8,10 +8,9 @@ import {
   setIcon,
   TFile,
 } from "obsidian";
-import * as CodeMirror from "codemirror";
-import "codemirror/mode/meta";
 import { extractRangeWithContext, normalizeMarkdown } from "./markdown";
 import { Embed, EmbedDisplay, EmbedOptions, parse } from "./embed";
+import { languageMap } from "./languageMap";
 
 interface Quote {
   file: TFile;
@@ -75,10 +74,7 @@ async function assembleQuote(
   if (file.extension.toLowerCase() == "md") {
     quote = normalizeMarkdown(quote);
   } else {
-    const language =
-      CodeMirror.modeInfo?.find((m) =>
-        m.ext?.includes(file.extension.toLowerCase())
-      )?.mode || "";
+    const language = languageMap[file.extension.toLowerCase()] || "";
     quote = "```" + language + "\n" + quote.replace(/^\n+|\n+$/, "") + "\n```";
   }
 
