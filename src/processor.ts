@@ -8,6 +8,7 @@ import {
   setIcon,
   TFile,
 } from "obsidian";
+import { languages } from "@codemirror/language-data";
 import { extractRangeWithContext, normalizeMarkdown } from "./markdown";
 import { Embed, EmbedDisplay, EmbedOptions, parse } from "./embed";
 
@@ -54,12 +55,32 @@ async function assembleQuote(
   );
   let quote: string;
   if (embed.ranges.length > 0) {
-    quote = normalizeMarkdown(
-      embed.ranges.map((r) => extractRangeWithContext(text, r)).join(embed.join)
-    );
+    if (file.extension.toLowerCase() == "md") {
+      quote = embed.ranges
+        .map((r) => extractRangeWithContext(text, r))
+        .join(embed.join);
+    } else {
+      quote = embed.ranges
+        .map((r) => {
+          const { start, end } = r.indexes(text);
+          return text.slice(start, end);
+        })
+        .join(embed.join);
+    }
   } else {
     quote = text;
   }
+
+  if (file.extension.toLowerCase() == "md") {
+    quote = normalizeMarkdown(quote);
+  } else {
+    const language =
+      languages?.find((l) =>
+        l.extensions?.includes(file.extension.toLowerCase())
+      )?.name || "";
+    quote = "```" + language + "\n" + quote.replace(/^\n+|\n+$/, "") + "\n```";
+  }
+
   return {
     file: file,
     subpath: embed.subpath,
