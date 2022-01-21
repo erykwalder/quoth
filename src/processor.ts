@@ -8,7 +8,7 @@ import {
   setIcon,
   TFile,
 } from "obsidian";
-import CodeMirror from "codemirror";
+import * as CodeMirror from "codemirror";
 import "codemirror/mode/meta";
 import { extractRangeWithContext, normalizeMarkdown } from "./markdown";
 import { Embed, EmbedDisplay, EmbedOptions, parse } from "./embed";
@@ -78,7 +78,7 @@ async function assembleQuote(
     const language =
       CodeMirror.modeInfo?.find((m) =>
         m.ext?.includes(file.extension.toLowerCase())
-      )?.name || "";
+      )?.mode || "";
     quote = "```" + language + "\n" + quote.replace(/^\n+|\n+$/, "") + "\n```";
   }
 
