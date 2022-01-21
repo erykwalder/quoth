@@ -120,7 +120,7 @@ class QuothSettingTab extends PluginSettingTab {
     containerEl.createEl("h2", { text: "Quoth Settings" });
 
     new Setting(containerEl)
-      .setName("Re-Index Quoths")
+      .setName("Rebuild Quoth Index")
       .setDesc(
         "This will load all quoths in your vault into the index. " +
           "This may need to be called after a major update, " +
@@ -128,14 +128,14 @@ class QuothSettingTab extends PluginSettingTab {
       )
       .addButton((button) => {
         button
-          .setButtonText("Re-Index")
+          .setButtonText("Rebuild Index")
           .setClass("mod-cta")
           .onClick(async () => {
             if (button.disabled) {
               return;
             }
             button.setDisabled(true);
-            button.setButtonText("Re-Indexing...");
+            button.setButtonText("Rebuilding Index...");
             const mdFiles = this.plugin.app.vault.getMarkdownFiles();
             this.plugin.data.index = (
               await Promise.all(
@@ -146,7 +146,7 @@ class QuothSettingTab extends PluginSettingTab {
             ).flat();
             await this.plugin.saveStorage();
             button.setDisabled(false);
-            button.setButtonText("Re-Index");
+            button.setButtonText("Rebuild Index");
           });
       });
 
