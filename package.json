@@ -8,8 +8,8 @@
   "license": "MIT",
   "private": false,
   "scripts": {
-    "dev": "esbuild src/main.ts --bundle --external:obsidian --outdir=.  --target=es2016 --format=cjs --sourcemap=inline --watch",
-    "build": "esbuild src/main.ts --bundle --external:obsidian --outdir=.  --target=es2016 --format=cjs",
+    "dev": "node esbuild.config.mjs",
+    "build": "tsc -noEmit -skipLibCheck && node esbuild.config.mjs production",
     "test": "jest --maxWorkers=1 --watchAll"
   },
   "devDependencies": {
