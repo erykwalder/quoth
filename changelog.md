@@ -1,5 +1,11 @@
 # Changelog
 
+### version 0.5.0
+
+New Features:
+
+- Code blocks when embedding other filetypes with syntax highlighting.
+
 ### version 0.4.0
 
 New Features:
