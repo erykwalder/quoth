@@ -1,5 +1,15 @@
 # Changelog
 
+### version 0.4.0
+
+New Features:
+
+- Automatically updates quoths when source files are renamed.
+
+Fixes:
+
+- Attempts to load non-markdown embeds.
+
 ### version 0.3.0
 
 New Features:
