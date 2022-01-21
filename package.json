@@ -13,11 +13,11 @@
     "test": "jest --maxWorkers=1 --watchAll"
   },
   "devDependencies": {
-    "@codemirror/language-data": "^0.19.1",
     "@types/jest": "^27.0.2",
     "@types/node": "^16.11.3",
     "@typescript-eslint/eslint-plugin": "^5.7.0",
     "@typescript-eslint/parser": "^5.7.0",
+    "codemirror": "^5.65.1",
     "esbuild": "^0.13.8",
     "eslint": "^7.12.1",
     "jest": "^27.3.1",
