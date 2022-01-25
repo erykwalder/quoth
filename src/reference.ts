@@ -137,8 +137,8 @@ async function updateQuothPathInFiles(
 }
 
 function quothOffsets(fileData: string): { start: number; end: number }[] {
-  const startRegex = /^ {0,3}`{3,}quoth/gm;
-  const endRegex = /^ {0,3}`{3,} *$/gm;
+  const startRegex = /^ {0,3}(?:`{3,}|~){3,}quoth/gm;
+  const endRegex = /^ {0,3}(?:`{3,}|~{3,}) *$/gm;
   const offsets = [];
   let res;
   while ((res = startRegex.exec(fileData))) {
@@ -175,7 +175,10 @@ async function safeReadFile(
 
 function anyStaleLinks(oldPath: string, fileData: string): boolean {
   // match links outside of quoth blocks in capture group
-  const quothMatcher = "(?:^|\\n) {0,3}`{3,}quoth.+?\\n {0,3}`{3,} *(?:$|\\n)";
+  const quothMatcher =
+    "(?:^|\\n) {0,3}(?:`{3,}|~{3,})quoth" + //start
+    ".+?" + //content
+    "\\n {0,3}(?:`{3,}|~{3,}) *(?:$|\\n)"; // end;
   const linkMatcher =
     "(\\[\\[(?:" + fileRegex(oldPath) + ")(?:\\|[^\\]|]+)?\\]\\])";
   const regex = new RegExp(quothMatcher + "|" + linkMatcher, "gs");

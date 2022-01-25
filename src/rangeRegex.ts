@@ -82,7 +82,7 @@ const prefixList = [
   { matcher: "mark", regex: "==" },
   { matcher: "ul > li", regex: "-|\\+|\\*" },
   { matcher: "ol > li", regex: "\\d+\\." },
-  { matcher: "pre > code", regex: "```|\\t| {4}" },
+  { matcher: "pre > code", regex: "`{3,}|~{3,}|\\t| {4}" },
   { matcher: "code", regex: "`" },
   { matcher: "a.internal-link", regex: "\\[\\[(.+?\\|)?" },
   { matcher: "a", regex: "\\[|<" },
