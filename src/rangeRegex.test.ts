@@ -84,7 +84,7 @@ describe(rangeRegex, () => {
         start: { node: el("#p3 > strong").firstChild, offset: 0 },
         end: { node: el("#p3 > strong > em").firstChild, offset: 13 },
         result:
-          /((\*\*|__)\s*?)?A\s+paragraph\s+.*?that\s+has\s+both(\s*?(\*|_))?/ms,
+          /((\*\*|__)\s*?)?A\s+paragraph\s+.*?that\s+has\s+both(\s*?([*_]))?/ms,
       },
     ]);
   });

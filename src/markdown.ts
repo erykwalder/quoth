@@ -23,7 +23,7 @@ const ListItemToken: MarkdownToken = {
   // without knowing the previous line
   // it is impossible to know if leading space
   // is an indented bullet or a code block
-  matcher: "( |\t)*(\\d+\\.|-|\\+|\\*)( |\\t)",
+  matcher: "(( |\t)*(\\d+[.)])|[+*-])( |\\t)",
 };
 const CodeLineToken: MarkdownToken = {
   type: "linestart",
@@ -35,7 +35,7 @@ const StrongToken: MarkdownToken = {
 };
 const StrikeToken: MarkdownToken = { type: "surrounding", matcher: "~~" };
 const MarkToken: MarkdownToken = { type: "surrounding", matcher: "==" };
-const EmToken: MarkdownToken = { type: "surrounding", matcher: "\\*|_" };
+const EmToken: MarkdownToken = { type: "surrounding", matcher: "[*_]" };
 const CodeToken: MarkdownToken = { type: "surrounding", matcher: "`" };
 const TextToken: MarkdownToken = { type: "text", matcher: "." };
 

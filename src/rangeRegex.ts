@@ -77,11 +77,11 @@ const prefixList = [
   { matcher: "h6", regex: "######" },
   { matcher: "blockquote", regex: ">" },
   { matcher: "strong", regex: "\\*\\*|__" },
-  { matcher: "em", regex: "\\*|_" },
+  { matcher: "em", regex: "[*_]" },
   { matcher: "del", regex: "~~" },
   { matcher: "mark", regex: "==" },
-  { matcher: "ul > li", regex: "-|\\+|\\*" },
-  { matcher: "ol > li", regex: "\\d+\\." },
+  { matcher: "ul > li", regex: "[+*-]" },
+  { matcher: "ol > li", regex: "\\d+[.)]" },
   { matcher: "pre > code", regex: "`{3,}|~{3,}|\\t| {4}" },
   { matcher: "code", regex: "`" },
   { matcher: "a.internal-link", regex: "\\[\\[(.+?\\|)?" },
@@ -90,7 +90,7 @@ const prefixList = [
 
 const suffixList = [
   { matcher: "strong", regex: "\\*\\*|__" },
-  { matcher: "em", regex: "\\*|_" },
+  { matcher: "em", regex: "[*_]" },
   { matcher: "del", regex: "~~" },
   { matcher: "mark", regex: "==" },
   { matcher: "code", regex: "`" },
