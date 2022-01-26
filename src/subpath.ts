@@ -1,7 +1,14 @@
-import { BlockCache, CachedMetadata, HeadingCache } from "obsidian";
-import { PosRange } from "./range";
+import {
+  BlockCache,
+  CachedMetadata,
+  EditorRange,
+  HeadingCache,
+} from "obsidian";
 
-export function scopeSubpath(cache: CachedMetadata, range: PosRange): string {
+export function scopeSubpath(
+  cache: CachedMetadata,
+  range: EditorRange
+): string {
   const block = getContainingBlock(cache.blocks, range);
   if (block) {
     return "#^" + block.id;
@@ -28,12 +35,12 @@ export function scopeSubpath(cache: CachedMetadata, range: PosRange): string {
 
 export function getContainingBlock(
   blocks: Record<string, BlockCache> | null,
-  range: PosRange
+  range: EditorRange
 ): BlockCache | null {
   for (const k in blocks) {
     if (
-      blocks[k].position.start.line <= range.start.line &&
-      blocks[k].position.end.line >= range.end.line
+      blocks[k].position.start.line <= range.from.line &&
+      blocks[k].position.end.line >= range.to.line
     ) {
       return blocks[k];
     }
@@ -43,18 +50,18 @@ export function getContainingBlock(
 
 export function getParentHeadings(
   headings: HeadingCache[] | null,
-  range: PosRange
+  range: EditorRange
 ): HeadingCache[] {
   if (!headings) {
     return [];
   }
-  const lastHeadingIdx = indexOfLastHeading(headings, range.end.line);
+  const lastHeadingIdx = indexOfLastHeading(headings, range.to.line);
   const parents: HeadingCache[] = [];
   let level = Infinity;
   for (let i = lastHeadingIdx; i >= 0; i--) {
     if (headings[i].level < level) {
       level = headings[i].level;
-      if (headings[i].position.start.line <= range.start.line) {
+      if (headings[i].position.start.line <= range.from.line) {
         parents.unshift(headings[i]);
       }
     }

@@ -1,4 +1,4 @@
-import { EditorPosition, EditorSelection } from "obsidian";
+import { EditorPosition } from "obsidian";
 import { indexOfLine } from "./stringSearch";
 
 export abstract class Range {
@@ -18,18 +18,6 @@ export class PosRange extends Range {
   }
   toString(): string {
     return `${posString(this.start)} to ${posString(this.end)}`;
-  }
-
-  static fromEditorSelection(es: EditorSelection): PosRange {
-    let start = es.anchor;
-    let end = es.head;
-    if (
-      start.line > end.line ||
-      (start.line == end.line && start.ch > end.ch)
-    ) {
-      [start, end] = [end, start];
-    }
-    return new PosRange(start, end);
   }
 }
 

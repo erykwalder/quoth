@@ -1,6 +1,8 @@
 import {
   App,
   Editor,
+  EditorRange,
+  EditorSelection,
   MarkdownView,
   Notice,
   resolveSubpath,
@@ -32,7 +34,7 @@ interface refBuilder {
   view: MarkdownView;
   editor: Editor;
   file: TFile;
-  posRange?: PosRange;
+  editorRange?: EditorRange;
   range?: Range;
   subpath?: string;
 }
@@ -63,24 +65,27 @@ export function checkCopyReference(
 function copyReference(rb: refBuilder): void {
   try {
     if (rb.view.getMode() === "source") {
-      rb.posRange = getSourceRange(rb);
+      rb.editorRange = getSourceRange(rb);
     } else {
-      rb.posRange = getPreviewRange(rb);
+      rb.editorRange = getPreviewRange(rb);
     }
 
     let text = rb.editor.getValue();
-    const selectedText = rb.editor.getRange(rb.posRange.start, rb.posRange.end);
+    const selectedText = rb.editor.getRange(
+      rb.editorRange.from,
+      rb.editorRange.to
+    );
 
     const fileCache = rb.app.metadataCache.getFileCache(rb.file);
-    rb.subpath = scopeSubpath(fileCache, rb.posRange);
+    rb.subpath = scopeSubpath(fileCache, rb.editorRange);
     if (rb.subpath.length > 0) {
       const subPath = resolveSubpath(fileCache, rb.subpath);
       text = text.slice(subPath.start.offset, subPath.end?.offset);
-      rb.posRange.start.line -= subPath.start.line;
-      rb.posRange.end.line -= subPath.start.line;
+      rb.editorRange.from.line -= subPath.start.line;
+      rb.editorRange.to.line -= subPath.start.line;
     }
 
-    rb.range = getBestRange(text, selectedText, rb.posRange);
+    rb.range = getBestRange(text, selectedText, rb.editorRange);
 
     navigator.clipboard.writeText(buildReference(rb));
     new Notice("Reference copied!", 1500);
@@ -89,14 +94,14 @@ function copyReference(rb: refBuilder): void {
   }
 }
 
-function getSourceRange(rb: refBuilder): PosRange {
+function getSourceRange(rb: refBuilder): EditorRange {
   if (!rb.editor.somethingSelected()) {
     throw new Error("Nothing is selected");
   }
-  return PosRange.fromEditorSelection(rb.editor.listSelections()[0]);
+  return selectionToRange(rb.editor.listSelections()[0]);
 }
 
-function getPreviewRange(rb: refBuilder): PosRange {
+function getPreviewRange(rb: refBuilder): EditorRange {
   if (!isTextSelected()) {
     throw new Error("Nothing is selected");
   }
@@ -107,16 +112,16 @@ function getPreviewRange(rb: refBuilder): PosRange {
       "Unable to locate markdown from preview, try copying from source mode."
     );
   }
-  return new PosRange(
-    rb.editor.offsetToPos(match.index),
-    rb.editor.offsetToPos(match.index + match[0].length)
-  );
+  return {
+    from: rb.editor.offsetToPos(match.index),
+    to: rb.editor.offsetToPos(match.index + match[0].length),
+  };
 }
 
 function getBestRange(
   doc: string,
   selectedText: string,
-  selectedRange: PosRange
+  selectedRange: EditorRange
 ): Range {
   if (doc === selectedText) {
     return null;
@@ -129,7 +134,7 @@ function getBestRange(
       return new StringRange(points[0], points[1]);
     }
   } else {
-    return selectedRange;
+    return new PosRange(selectedRange.from, selectedRange.to);
   }
 }
 
@@ -150,4 +155,13 @@ function buildReference(rb: refBuilder): string {
     embed.ranges.push(rb.range);
   }
   return serialize(embed);
+}
+
+function selectionToRange(sel: EditorSelection): EditorRange {
+  let start = sel.anchor;
+  let end = sel.head;
+  if (start.line > end.line || (start.line == end.line && start.ch > end.ch)) {
+    [start, end] = [end, start];
+  }
+  return { from: start, to: end };
 }
