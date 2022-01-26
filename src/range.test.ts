@@ -1,4 +1,4 @@
-import { PosRange, StringRange } from "./range";
+import { PosRange, StringRange, WholeString } from "./range";
 
 const text = "hello\nworld";
 
@@ -26,6 +26,20 @@ describe(StringRange, () => {
   describe("toString", () => {
     it("outputs in a parseable string to string format", () => {
       expect(range.toString()).toBe(`"el" to "or"`);
+    });
+  });
+});
+
+describe(WholeString, () => {
+  const range = new WholeString("hello");
+  describe("indexes", () => {
+    it("locates indexes in string", () => {
+      expect(range.indexes(text)).toStrictEqual({ start: 0, end: 5 });
+    });
+  });
+  describe("toString", () => {
+    it("outputs in a parseable string format", () => {
+      expect(range.toString()).toBe(`"hello"`);
     });
   });
 });
