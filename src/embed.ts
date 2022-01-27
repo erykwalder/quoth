@@ -1,5 +1,12 @@
 import { EditorPosition } from "obsidian";
-import { Range, PosRange, StringRange, WholeString } from "./range";
+import {
+  AfterPos,
+  AfterString,
+  PosRange,
+  Range,
+  StringRange,
+  WholeString,
+} from "./range";
 
 export type Embed = {
   file: string;
@@ -112,7 +119,7 @@ const lineParsers: { [key: string]: LineParser } = {
   ranges: (text: string, data: Embed) => {
     // Match: "string" | 10:15 | to | ,
     // g suffix: match all
-    const tokenRegex = /"([^"\\]|\\.)+"|\d+:\d+|to|,/g;
+    const tokenRegex = /"([^"\\]|\\.)+"|\d+:\d+|to|after|,/g;
     data.ranges = [];
     const tokens: string[] = [];
 
@@ -166,10 +173,21 @@ const lineParsers: { [key: string]: LineParser } = {
 
 function parseRange(tokens: string[]): Range {
   const cur = tokens[0];
-  if (cur[0] === '"') {
+  if (cur === "after") {
+    return parseAfterRange(tokens);
+  } else if (cur[0] === '"') {
     return parseStringRange(tokens);
   } else {
     return parsePosRange(tokens);
+  }
+}
+
+function parseAfterRange(tokens: string[]): Range {
+  tokens.shift();
+  if (tokens[0][0] === '"') {
+    return new AfterString(JSON.parse(tokens.shift()) as string);
+  } else {
+    return new AfterPos(parsePos(tokens.shift()));
   }
 }
 

@@ -1,5 +1,11 @@
 import { parse, Embed } from "./embed";
-import { PosRange, StringRange, WholeString } from "./range";
+import {
+  AfterPos,
+  AfterString,
+  PosRange,
+  StringRange,
+  WholeString,
+} from "./range";
 
 describe("parser", () => {
   it("parses the path with just a filename", () => {
@@ -63,6 +69,16 @@ describe("parser", () => {
     expect(result.ranges).toStrictEqual([new WholeString("Hello world.")]);
   });
 
+  it("parses an after string range", () => {
+    const result: Embed = parse(`ranges: after "Hello"`);
+    expect(result.ranges).toStrictEqual([new AfterString("Hello")]);
+  });
+
+  it("parses an after pos range", () => {
+    const result: Embed = parse(`ranges: after 0:5`);
+    expect(result.ranges).toStrictEqual([new AfterPos({ line: 0, ch: 5 })]);
+  });
+
   it("parses multiple ranges", () => {
     const result: Embed = parse(`ranges: "Hello" to "foobar", "Biz" to "baz"`);
     expect(result.ranges).toStrictEqual([
@@ -113,7 +129,7 @@ heading: #Lunar Cycles
     const text = `file: [[File Title]]
 heading: #Heading#21
 block: ^someid
-ranges: 123:10 to 125:10, "doc" to "text", "start" to "end"
+ranges: 123:10 to 125:10, "doc" to "text", "start" to "end", after "text"
 join: ", "
 show: title
 display: inline`;
@@ -125,6 +141,7 @@ display: inline`;
         new PosRange({ line: 123, ch: 10 }, { line: 125, ch: 10 }),
         new StringRange("doc", "text"),
         new StringRange("start", "end"),
+        new AfterString("text"),
       ],
       join: ", ",
       show: {

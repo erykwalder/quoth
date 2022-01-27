@@ -42,6 +42,30 @@ export class WholeString implements Range {
   }
 }
 
+export class AfterString implements Range {
+  constructor(readonly str: string) {}
+  indexes(doc: string): OffsetRange {
+    const start = stringIndex(doc, this.str) + this.str.length;
+    const end = doc.length;
+    return { start, end };
+  }
+  toString(): string {
+    return `after ${JSON.stringify(this.str)}`;
+  }
+}
+
+export class AfterPos implements Range {
+  constructor(readonly pos: EditorPosition) {}
+  indexes(doc: string): OffsetRange {
+    const start = posIndex(doc, this.pos);
+    const end = doc.length;
+    return { start, end };
+  }
+  toString(): string {
+    return `after ${posString(this.pos)}`;
+  }
+}
+
 export type OffsetRange = {
   start: number;
   end: number;

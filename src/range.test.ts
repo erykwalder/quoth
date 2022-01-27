@@ -1,4 +1,10 @@
-import { PosRange, StringRange, WholeString } from "./range";
+import {
+  AfterPos,
+  AfterString,
+  PosRange,
+  StringRange,
+  WholeString,
+} from "./range";
 
 const text = "hello\nworld";
 
@@ -40,6 +46,34 @@ describe(WholeString, () => {
   describe("toString", () => {
     it("outputs in a parseable string format", () => {
       expect(range.toString()).toBe(`"hello"`);
+    });
+  });
+});
+
+describe(AfterPos, () => {
+  const range = new AfterPos({ line: 1, ch: 0 });
+  describe("indexes", () => {
+    it("locates indexes in string", () => {
+      expect(range.indexes(text)).toStrictEqual({ start: 6, end: 11 });
+    });
+  });
+  describe("toString", () => {
+    it("outputs in a parseable string format", () => {
+      expect(range.toString()).toBe(`after 1:0`);
+    });
+  });
+});
+
+describe(AfterString, () => {
+  const range = new AfterString("hello");
+  describe("indexes", () => {
+    it("locates indexes in string", () => {
+      expect(range.indexes(text)).toStrictEqual({ start: 5, end: 11 });
+    });
+  });
+  describe("toString", () => {
+    it("outputs in a parseable string format", () => {
+      expect(range.toString()).toBe(`after "hello"`);
     });
   });
 });
