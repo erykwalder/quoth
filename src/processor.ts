@@ -4,13 +4,13 @@ import {
   Keymap,
   MarkdownPostProcessorContext,
   MarkdownRenderer,
-  resolveSubpath,
   setIcon,
   TFile,
 } from "obsidian";
 import { extractRangeWithContext, normalizeMarkdown } from "./markdown";
 import { Embed, EmbedDisplay, EmbedOptions, parse } from "./embed";
 import { languageMap } from "./languageMap";
+import { resolveSubpath } from "./resolveSubpath";
 
 interface Quote {
   file: TFile;
@@ -89,7 +89,7 @@ async function assembleQuote(
 
 function quoteContent(data: string, cache: CachedMetadata, subpath: string) {
   if (subpath) {
-    const pathResult = resolveSubpath(cache, subpath);
+    const pathResult = resolveSubpath(data, cache, subpath);
     if (pathResult) {
       return data.slice(pathResult.start.offset, pathResult.end?.offset);
     } else {

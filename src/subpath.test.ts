@@ -1,5 +1,7 @@
-import { BlockCache, CachedMetadata, HeadingCache } from "obsidian";
+import { CachedMetadata } from "obsidian";
 import { getContainingBlock, getParentHeadings, scopeSubpath } from "./subpath";
+import { resolveList } from "./resolveList";
+import { buildCache } from "./test/testHelpers";
 
 const exampleText = `Pre-heading text.
 # First Level
@@ -32,53 +34,7 @@ Test5
 # Not Unique
 Test 6`;
 
-interface testCache {
-  headings: HeadingCache[];
-  blocks: Record<string, BlockCache>;
-}
-
-function buildCache(text: string): testCache {
-  const res: testCache = {
-    headings: [],
-    blocks: {},
-  };
-  let offset = 0,
-    match;
-  const lines = text.split("\n");
-  for (let i = 0; i < lines.length; i++) {
-    if ((match = lines[i].match(/^(#+) (.+?)$/))) {
-      res.headings.push({
-        heading: match[2],
-        level: match[1].length,
-        position: {
-          start: { line: i, col: 0, offset: offset },
-          end: {
-            line: i,
-            col: lines[i].length,
-            offset: offset + lines[i].length,
-          },
-        },
-      });
-    }
-    if ((match = lines[i].match(/ \^([A-Za-z0-9]+)$/))) {
-      res.blocks[match[1]] = {
-        id: match[1],
-        position: {
-          start: { line: i, col: 0, offset: offset },
-          end: {
-            line: i,
-            col: lines[i].length,
-            offset: offset + lines[i].length,
-          },
-        },
-      };
-    }
-    offset += lines[i].length + 1;
-  }
-  return res;
-}
-
-const exampleCache: testCache = buildCache(exampleText);
+const exampleCache = buildCache(exampleText);
 const dupeCache = buildCache(dupeExampleText);
 
 describe(scopeSubpath, () => {

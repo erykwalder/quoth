@@ -3,4 +3,5 @@ module.exports = {
   preset: "ts-jest",
   testEnvironment: "node",
   setupFilesAfterEnv: ["./jestSetup.ts"],
+  modulePathIgnorePatterns: ["./data.json"],
 };
