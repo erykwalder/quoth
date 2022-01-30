@@ -137,7 +137,7 @@ async function updateQuothPathInFiles(
 }
 
 function quothOffsets(fileData: string): { start: number; end: number }[] {
-  const startRegex = /^ {0,3}(?:`{3,}|~){3,}quoth/gm;
+  const startRegex = /^ {0,3}(?:`{3,}|~{3,})quoth/gm;
   const endRegex = /^ {0,3}(?:`{3,}|~{3,}) *$/gm;
   const offsets = [];
   let res;
