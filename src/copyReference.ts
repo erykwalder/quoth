@@ -5,39 +5,10 @@ import {
   EditorSelection,
   MarkdownView,
   Notice,
-  resolveSubpath,
-  TFile,
 } from "obsidian";
-import { scopeSubpath } from "./subpath";
-import { Range, PosRange, StringRange, WholeString } from "./range";
-import { isUnique, uniqueStrRange } from "./stringSearch";
-import getSelectedRange, { isTextSelected } from "./selection";
+import { buildEmbed, CopySettings } from "./buildEmbed";
 import { rangeRegex } from "./rangeRegex";
-import {
-  DEFAULT_DISPLAY,
-  DEFAULT_JOIN,
-  Embed,
-  EmbedDisplay,
-  EmbedOptions,
-  serialize,
-} from "./embed";
-
-export interface CopySettings {
-  defaultDisplay?: EmbedDisplay;
-  defaultShow: EmbedOptions;
-  showMobileButton: boolean;
-}
-
-interface refBuilder {
-  app: App;
-  settings: CopySettings;
-  view: MarkdownView;
-  editor: Editor;
-  file: TFile;
-  editorRange?: EditorRange;
-  range?: Range;
-  subpath?: string;
-}
+import { getSelectedRange, isTextSelected } from "./selection";
 
 export function checkCopyReference(
   app: App,
@@ -47,13 +18,20 @@ export function checkCopyReference(
   const view = app.workspace.getActiveViewOfType(MarkdownView);
 
   if (!checking && view) {
-    copyReference({
-      app: app,
-      settings: settings,
-      view: view,
-      editor: view.editor,
-      file: view.file,
-    });
+    try {
+      navigator.clipboard.writeText(
+        buildEmbed(
+          app,
+          settings,
+          view.file,
+          view.editor.getValue(),
+          getViewRange(view, view.editor)
+        )
+      );
+      new Notice("Reference copied!", 1500);
+    } catch (e) {
+      new Notice(e, 3000);
+    }
   }
 
   return (
@@ -62,99 +40,36 @@ export function checkCopyReference(
   );
 }
 
-function copyReference(rb: refBuilder): void {
-  try {
-    if (rb.view.getMode() === "source") {
-      rb.editorRange = getSourceRange(rb);
-    } else {
-      rb.editorRange = getPreviewRange(rb);
-    }
-
-    let text = rb.editor.getValue();
-    const selectedText = rb.editor.getRange(
-      rb.editorRange.from,
-      rb.editorRange.to
-    );
-
-    const fileCache = rb.app.metadataCache.getFileCache(rb.file);
-    rb.subpath = scopeSubpath(fileCache, rb.editorRange);
-    if (rb.subpath.length > 0) {
-      const subPath = resolveSubpath(fileCache, rb.subpath);
-      text = text.slice(subPath.start.offset, subPath.end?.offset);
-      rb.editorRange.from.line -= subPath.start.line;
-      rb.editorRange.to.line -= subPath.start.line;
-    }
-
-    rb.range = getBestRange(text, selectedText, rb.editorRange);
-
-    navigator.clipboard.writeText(buildReference(rb));
-    new Notice("Reference copied!", 1500);
-  } catch (e) {
-    new Notice(e.message, 3000);
+function getViewRange(view: MarkdownView, editor: Editor) {
+  if (view.getMode() === "source") {
+    return getSourceRange(editor);
+  } else {
+    return getPreviewRange(editor);
   }
 }
 
-function getSourceRange(rb: refBuilder): EditorRange {
-  if (!rb.editor.somethingSelected()) {
+function getSourceRange(editor: Editor): EditorRange {
+  if (!editor.somethingSelected()) {
     throw new Error("Nothing is selected");
   }
-  return selectionToRange(rb.editor.listSelections()[0]);
+  return selectionToRange(editor.listSelections()[0]);
 }
 
-function getPreviewRange(rb: refBuilder): EditorRange {
+function getPreviewRange(editor: Editor): EditorRange {
   if (!isTextSelected()) {
     throw new Error("Nothing is selected");
   }
   const selectedRegex = rangeRegex(getSelectedRange());
-  const match = rb.editor.getValue().match(selectedRegex);
+  const match = editor.getValue().match(selectedRegex);
   if (!match) {
     throw new Error(
       "Unable to locate markdown from preview, try copying from source mode."
     );
   }
   return {
-    from: rb.editor.offsetToPos(match.index),
-    to: rb.editor.offsetToPos(match.index + match[0].length),
+    from: editor.offsetToPos(match.index),
+    to: editor.offsetToPos(match.index + match[0].length),
   };
-}
-
-function getBestRange(
-  doc: string,
-  selectedText: string,
-  selectedRange: EditorRange
-): Range {
-  if (doc === selectedText) {
-    return null;
-  }
-  if (isUnique(doc, selectedText)) {
-    const points = uniqueStrRange(doc, selectedText);
-    if (points.length === 1) {
-      return new WholeString(points[0]);
-    } else {
-      return new StringRange(points[0], points[1]);
-    }
-  } else {
-    return new PosRange(selectedRange.from, selectedRange.to);
-  }
-}
-
-function buildReference(rb: refBuilder): string {
-  const embed: Embed = {
-    file: rb.app.metadataCache.fileToLinktext(rb.file, "/", true),
-    subpath: rb.subpath,
-    ranges: [],
-    join: DEFAULT_JOIN,
-    show: {
-      author: false,
-      title: false,
-      ...rb.settings.defaultShow,
-    },
-    display: rb.settings.defaultDisplay || DEFAULT_DISPLAY,
-  };
-  if (rb.range) {
-    embed.ranges.push(rb.range);
-  }
-  return serialize(embed);
 }
 
 function selectionToRange(sel: EditorSelection): EditorRange {

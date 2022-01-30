@@ -1,3 +1,5 @@
+import { EditorPosition } from "obsidian";
+
 export function indexOfLine(text: string, line: number): number {
   let idx = -1;
   for (let newLines = 0; newLines < line; newLines++) {
@@ -6,6 +8,11 @@ export function indexOfLine(text: string, line: number): number {
     }
   }
   return idx + 1;
+}
+
+export function indexPos(text: string, index: number): EditorPosition {
+  const lines = text.slice(0, index).split("\n");
+  return { line: lines.length - 1, ch: lines.last().length };
 }
 
 export function uniqueStrRange(text: string, search: string): string[] {

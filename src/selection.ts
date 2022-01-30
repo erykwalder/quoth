@@ -1,6 +1,6 @@
 let lastRange: Range;
 
-export default function getSelectedRange(): Range {
+export function getSelectedRange(): Range {
   return lastRange;
 }
 

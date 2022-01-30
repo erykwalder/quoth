@@ -83,7 +83,7 @@ function stringIndex(doc: string, search: string, after?: number): number {
   return index;
 }
 
-function posIndex(doc: string, pos: EditorPosition): number {
+export function posIndex(doc: string, pos: EditorPosition): number {
   const lineIndex = indexOfLine(doc, pos.line);
   if (lineIndex === -1 || lineIndex + pos.ch > doc.length) {
     throw new Error(`${posString(pos)} is out of bounds`);

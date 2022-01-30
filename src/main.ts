@@ -1,11 +1,13 @@
 import { Platform, Plugin, PluginSettingTab, Setting } from "obsidian";
 import addIcons from "./addIcons";
-import { checkCopyReference, CopySettings } from "./copyReference";
+import { CopySettings } from "./buildEmbed";
+import { checkCopyReference } from "./copyReference";
 import copyButton from "./copyButton";
 import { EmbedDisplay } from "./embed";
 import { quothProcessor } from "./processor";
 import { selectListener } from "./selection";
 import { fileReferences, IndexListener, Reference } from "./reference";
+import { replaceBlockquotes } from "./replaceBlockquotes";
 
 interface QuothData {
   copySettings: CopySettings;
@@ -53,6 +55,16 @@ export default class QuothPlugin extends Plugin {
         },
       ],
       icon: "quoth-copy",
+    });
+
+    this.addCommand({
+      id: "quoth-replace-blockquotes",
+      name: "Replace Blockquotes with References",
+      editorCallback: replaceBlockquotes.bind(
+        null,
+        this.app,
+        this.data.copySettings
+      ),
     });
 
     this.registerDomEvent(document, "selectionchange", selectListener);
