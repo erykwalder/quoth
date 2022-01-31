@@ -76,8 +76,11 @@ function markdownSuffix(text: string, end: number): string {
 export function normalizeMarkdown(text: string): string {
   let parts: string[] = text.split("\n");
 
-  // Remove blockquotes up to the minimum per line
+  // Remove blockquotes and spaces up to the minimum per line
   while (parts[0].length > 0) {
+    while (all(parts, (p) => /^ |\t/.test(p))) {
+      parts = parts.map((p) => p.slice(1));
+    }
     if (all(parts, (p) => startsWithToken(p, BlockQuoteToken))) {
       parts = parts.map((p) => sliceToken(p, BlockQuoteToken)[0]);
     } else {
