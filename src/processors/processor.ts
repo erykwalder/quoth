@@ -8,9 +8,9 @@ import {
   TFile,
 } from "obsidian";
 import { extractRangeWithContext, normalizeMarkdown } from "./markdown";
-import { Embed, EmbedDisplay, EmbedOptions, parse } from "./embed";
+import { Embed, EmbedDisplay, EmbedOptions, parse } from "../model/embed";
 import { languageMap } from "./languageMap";
-import { resolveSubpath } from "./resolveSubpath";
+import { resolveSubpath } from "../util/obsidian/resolveSubpath";
 
 interface Quote {
   file: TFile;

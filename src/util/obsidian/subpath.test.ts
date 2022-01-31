@@ -1,6 +1,5 @@
 import { CachedMetadata } from "obsidian";
 import { getContainingBlock, getParentHeadings, scopeSubpath } from "./subpath";
-import { resolveList } from "./resolveList";
 import { buildCache } from "./test/testHelpers";
 
 const exampleText = `Pre-heading text.

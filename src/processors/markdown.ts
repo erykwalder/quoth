@@ -1,4 +1,4 @@
-import { Range } from "./range";
+import { Range } from "../model/range";
 
 interface MarkdownToken {
   type: "linestart" | "surrounding" | "text";

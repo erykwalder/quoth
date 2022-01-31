@@ -6,10 +6,16 @@ import {
   EmbedDisplay,
   EmbedOptions,
   serialize,
-} from "./embed";
-import { posIndex, PosRange, Range, StringRange, WholeString } from "./range";
-import { isUnique, uniqueStrRange } from "./stringSearch";
-import { scopeSubpath } from "./subpath";
+} from "../model/embed";
+import {
+  posIndex,
+  PosRange,
+  Range,
+  StringRange,
+  WholeString,
+} from "../model/range";
+import { isUnique, uniqueStrRange } from "../util/stringSearch";
+import { scopeSubpath } from "../util/obsidian/subpath";
 
 export interface CopySettings {
   defaultDisplay?: EmbedDisplay;

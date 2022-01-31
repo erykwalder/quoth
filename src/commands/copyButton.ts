@@ -1,8 +1,9 @@
 import { App, MarkdownView, setIcon } from "obsidian";
+import { CopySettings } from "./buildEmbed";
 import { isTextSelected } from "./selection";
-import { CopySettings, checkCopyReference } from "./copyReference";
+import { checkCopyReference } from "./copyReference";
 
-export default function copyButton(app: App, settings: CopySettings): void {
+export function copyButton(app: App, settings: CopySettings): void {
   if (!settings.showMobileButton) {
     return;
   }

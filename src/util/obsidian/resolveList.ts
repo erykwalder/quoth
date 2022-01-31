@@ -1,5 +1,5 @@
 import { ListItemCache, Loc, SubpathResult } from "obsidian";
-import { escapeRegex } from "./escapeRegex";
+import { escapeRegex } from "../escapeRegex";
 
 export interface ListItemSubpathResult extends SubpathResult {
   type: "list-item";

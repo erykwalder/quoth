@@ -1,5 +1,5 @@
 import { EditorPosition } from "obsidian";
-import { indexOfLine } from "./stringSearch";
+import { indexOfLine } from "../util/stringSearch";
 
 export interface Range {
   indexes(doc: string): OffsetRange;

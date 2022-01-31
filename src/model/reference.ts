@@ -1,6 +1,6 @@
 import { App, TAbstractFile, TFile } from "obsidian";
 import { parse, serialize } from "./embed";
-import { escapeRegex } from "./escapeRegex";
+import { escapeRegex } from "../util/escapeRegex";
 
 export interface Reference {
   sourceFile: string;
@@ -54,6 +54,17 @@ function fileInRefs(refs: Reference[], path: string): boolean {
 
 function filterOutFile(refs: Reference[], file: TFile): Reference[] {
   return refs.filter((ref) => ref.refFile !== file.path);
+}
+
+export async function buildIndex(app: App): Promise<Reference[]> {
+  const mdFiles = app.vault.getMarkdownFiles();
+  return (
+    await Promise.all(
+      mdFiles.map(async (file) => {
+        return await fileReferences(file, this.app);
+      })
+    )
+  ).flat();
 }
 
 export async function fileReferences(

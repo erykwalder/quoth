@@ -1,5 +1,5 @@
 import { extractRangeWithContext, normalizeMarkdown } from "./markdown";
-import { WholeString } from "./range";
+import { WholeString } from "../model/range";
 
 // text, matched range, result
 type extractTest = [string, string, string];

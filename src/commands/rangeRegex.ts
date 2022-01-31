@@ -1,4 +1,4 @@
-import { escapeRegex } from "./escapeRegex";
+import { escapeRegex } from "../util/escapeRegex";
 
 export function rangeRegex(range: Range): RegExp {
   return new RegExp(

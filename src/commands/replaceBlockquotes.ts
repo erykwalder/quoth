@@ -1,7 +1,7 @@
 import { App, Editor, FuzzySuggestModal, Notice, TFile } from "obsidian";
 import { buildEmbed, CopySettings } from "./buildEmbed";
-import { escapeRegex } from "./escapeRegex";
-import { indexPos } from "./stringSearch";
+import { escapeRegex } from "../util/escapeRegex";
+import { indexPos } from "../util/stringSearch";
 
 export async function replaceBlockquotes(
   app: App,
