@@ -156,7 +156,11 @@ function createEmbedWrapper(
   setIcon(mdLink, "link", 20);
   mdLink.addEventListener("click", async (e) => {
     if (e.button === 0) {
-      await openLink(path, sourcePath, Keymap.isModEvent(e));
+      await openLink(
+        quote.file.name + quote.subpath,
+        sourcePath,
+        Keymap.isModEvent(e)
+      );
     }
   });
 
