@@ -5,7 +5,7 @@ import { quothProcessor } from "./processors";
 import { selectListener } from "./commands/selection";
 import { replaceBlockquotes } from "./commands/replaceBlockquotes";
 import { DEFAULT_DATA, QuothData, QuothSettingTab } from "./settings";
-import { IndexListener, Reference } from "./model/reference";
+import { IndexListener, EmbedCache } from "./model/embedCache";
 
 export default class QuothPlugin extends Plugin {
   data: QuothData;
@@ -65,7 +65,7 @@ export default class QuothPlugin extends Plugin {
     const indexListener = new IndexListener(
       this.app,
       () => this.data.index,
-      async (refs: Reference[]) => {
+      async (refs: EmbedCache[]) => {
         this.data.index = refs;
         await this.saveStorage();
       }

@@ -2,7 +2,7 @@ import { App, TAbstractFile, TFile } from "obsidian";
 import { parse, serialize } from "./embed";
 import { escapeRegex } from "../util/escapeRegex";
 
-export interface Reference {
+export interface EmbedCache {
   sourceFile: string;
   subPath: string;
   ranges: string[];
@@ -13,65 +13,62 @@ export interface Reference {
 export class IndexListener {
   constructor(
     private app: App,
-    private load: () => Reference[],
-    private save: (refs: Reference[]) => Promise<void>
+    private load: () => EmbedCache[],
+    private save: (refs: EmbedCache[]) => Promise<void>
   ) {}
 
   async rename(file: TAbstractFile, oldPath: string) {
     let refs = this.load();
-    if (file instanceof TFile && fileInRefs(refs, oldPath)) {
+    if (file instanceof TFile && isFileInCache(refs, oldPath)) {
       refs = renameFile(refs, file as TFile, oldPath);
       await this.save(refs);
-      const dirtyRefs = dirtyReferences(refs, file as TFile);
+      const dirtyRefs = dirtyEmbeds(refs, file as TFile);
       await updateQuothPathInFiles(dirtyRefs, this.app, file as TFile, oldPath);
     }
   }
 
   async delete(file: TAbstractFile) {
     const refs = this.load();
-    if (file instanceof TFile && fileInRefs(refs, file.path)) {
+    if (file instanceof TFile && isFileInCache(refs, file.path)) {
       await this.save(filterOutFile(refs, file as TFile));
     }
   }
 
   async modify(file: TAbstractFile) {
-    const refs = this.load();
+    const embeds = this.load();
     if (file instanceof TFile) {
-      const filtered = filterOutFile(refs, file as TFile);
-      const fileRefs = await fileReferences(file as TFile, this.app);
-      if (filtered.length !== refs.length || fileRefs.length > 0) {
-        this.save([...filtered, ...fileRefs]);
+      const filtered = filterOutFile(embeds, file as TFile);
+      const fileEmbeds = await fileCache(file as TFile, this.app);
+      if (filtered.length !== embeds.length || fileEmbeds.length > 0) {
+        this.save([...filtered, ...fileEmbeds]);
       }
     }
   }
 }
 
-function fileInRefs(refs: Reference[], path: string): boolean {
+function isFileInCache(cache: EmbedCache[], path: string): boolean {
   return (
-    refs.find((r) => r.refFile === path || r.sourceFile === path) !== undefined
+    cache.find((e) => e.refFile === path || e.sourceFile === path) !== undefined
   );
 }
 
-function filterOutFile(refs: Reference[], file: TFile): Reference[] {
-  return refs.filter((ref) => ref.refFile !== file.path);
+function filterOutFile(cache: EmbedCache[], file: TFile): EmbedCache[] {
+  return cache.filter((e) => e.refFile !== file.path);
 }
 
-export async function buildIndex(app: App): Promise<Reference[]> {
+export async function buildIndex(app: App): Promise<EmbedCache[]> {
   const mdFiles = app.vault.getMarkdownFiles();
   return (
     await Promise.all(
       mdFiles.map(async (file) => {
-        return await fileReferences(file, this.app);
+        return await fileCache(file, this.app);
       })
     )
   ).flat();
 }
 
-export async function fileReferences(
-  file: TFile,
-  app: App
-): Promise<Reference[]> {
-  const refs: Reference[] = [];
+export async function fileCache(file: TFile, app: App): Promise<EmbedCache[]> {
+  const fileEmbeds: EmbedCache[] = [];
   const fileData = await app.vault.cachedRead(file as TFile);
   quothOffsets(fileData).forEach((offset, idx) => {
     const embed = parse(fileData.slice(offset.start, offset.end));
@@ -80,7 +77,7 @@ export async function fileReferences(
       file.path
     );
     if (sourceFile) {
-      refs.push({
+      fileEmbeds.push({
         sourceFile: sourceFile.path,
         subPath: embed.subpath,
         ranges: embed.ranges.map((r) => r.toString()),
@@ -89,54 +86,54 @@ export async function fileReferences(
       });
     }
   });
-  return refs;
+  return fileEmbeds;
 }
 
 function renameFile(
-  refs: Reference[],
+  embeds: EmbedCache[],
   sourceFile: TFile,
   oldPath: string
-): Reference[] {
-  return refs.map((ref) => {
-    if (ref.sourceFile === oldPath) {
-      ref = { ...ref, sourceFile: sourceFile.path };
+): EmbedCache[] {
+  return embeds.map((embed) => {
+    if (embed.sourceFile === oldPath) {
+      embed = { ...embed, sourceFile: sourceFile.path };
     }
-    if (ref.refFile === oldPath) {
-      ref = { ...ref, refFile: sourceFile.path };
+    if (embed.refFile === oldPath) {
+      embed = { ...embed, refFile: sourceFile.path };
     }
-    return ref;
+    return embed;
   });
 }
 
-function dirtyReferences(
-  refs: Reference[],
+function dirtyEmbeds(
+  refs: EmbedCache[],
   sourceFile: TFile
-): Record<string, Reference[]> {
-  const refsByFile: Record<string, Reference[]> = {};
+): Record<string, EmbedCache[]> {
+  const cacheByFile: Record<string, EmbedCache[]> = {};
   refs
-    .filter((ref) => ref.sourceFile === sourceFile.path)
-    .forEach((r) => {
-      refsByFile[r.refFile] ||= [];
-      refsByFile[r.refFile].push(r);
+    .filter((e) => e.sourceFile === sourceFile.path)
+    .forEach((e) => {
+      cacheByFile[e.refFile] ||= [];
+      cacheByFile[e.refFile].push(e);
     });
-  return refsByFile;
+  return cacheByFile;
 }
 
 async function updateQuothPathInFiles(
-  refsByFile: Record<string, Reference[]>,
+  cacheByFile: Record<string, EmbedCache[]>,
   app: App,
   sourceFile: TFile,
   oldPath: string
 ): Promise<void> {
   await Promise.all(
-    map(refsByFile, async (refPath: string, refs: Reference[]) => {
+    map(cacheByFile, async (refPath: string, cache: EmbedCache[]) => {
       const refFile = app.vault.getAbstractFileByPath(refPath) as TFile;
       let refData = await safeReadFile(app, refFile, oldPath);
       const offsets = quothOffsets(refData);
       // sort for safe string slicing
-      refs.sort((a, b) => b.refIdx - a.refIdx);
-      refs.forEach((ref) => {
-        const { start, end } = offsets[ref.refIdx];
+      cache.sort((a, b) => b.refIdx - a.refIdx);
+      cache.forEach((embedCache) => {
+        const { start, end } = offsets[embedCache.refIdx];
         const embed = parse(refData.slice(start, end));
         embed.file = app.metadataCache.fileToLinktext(sourceFile, refPath);
         refData =
@@ -214,8 +211,8 @@ function fileRegex(path: string): string {
 }
 
 function map<T>(
-  refsByFile: Record<string, Reference[]>,
-  fn: (refPath: string, refs: Reference[]) => T
+  refsByFile: Record<string, EmbedCache[]>,
+  fn: (refPath: string, refs: EmbedCache[]) => T
 ): T[] {
   const results = [];
   for (const file in refsByFile) {

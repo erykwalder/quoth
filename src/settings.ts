@@ -1,11 +1,11 @@
 import { Platform, Plugin, PluginSettingTab, Setting } from "obsidian";
 import { CopySettings } from "./commands";
 import { EmbedDisplay } from "./model/embed";
-import { buildIndex, Reference } from "./model/reference";
+import { buildIndex, EmbedCache } from "./model/embedCache";
 
 export interface QuothData {
   copySettings: CopySettings;
-  index: Reference[];
+  index: EmbedCache[];
 }
 
 export const DEFAULT_DATA: QuothData = {
