@@ -1,5 +1,19 @@
 # Changelog
 
+### version 0.6.0
+
+New Features:
+
+- Scoping embeds to list items.
+- `after` ranges which will embed everything after a
+  position or after a string.
+- A new command to replace blockquotes with embeds
+  from a source file.
+
+Fixes:
+
+- Support tilde `~` code blocks.
+
 ### version 0.5.0
 
 New Features:

@@ -25,20 +25,81 @@ Code blocks can also be constructed manually, and some functionality requires it
 All the fields in the code block can be seen below:
 
     ```quoth
-    path: [[Filename#Heading#^blockid]]
+    path: [[Filename#Heading]]
     ranges: "Hello " to "world.", "Foobar" to "Bizzbaz"
     join: " -- "
     display: inline
     show: author, title
     ```
 
-| Line      | Syntax                                                     | Description                                                                                     | Default    |
-| --------- | ---------------------------------------------------------- | ----------------------------------------------------------------------------------------------- | ---------- |
-| `path`    | `[[filename]]`, `[[file#heading]]`, or `[[file#^blockid]]` | **Required.** The path to the content that you want to include, like an internal obsidian link. | None       |
-| `ranges`  | `"text" to "text"` or `line:col to line:col`               | The part of the document you would like to embed. Multiple ranges can be joined with `,`.       | None       |
-| `join`    | `"; "`                                                     | How to combine multiple ranges.                                                                 | `" ... "`  |
-| `display` | `embedded` or `inline`                                     | How to display the embed.                                                                       | `embedded` |
-| `show`    | `author` and/or `title`                                    | Whether to include the source author or title. Multiple options can be joined with `,`.         | None       |
+### Fields
+
+> #### `path`
+>
+> **Syntax:** `[[filename#subpath]]`
+>
+> **subpath syntax**:
+>
+> - A heading: `#Some heading`
+> - A block id: `#^blockid`
+> - A list item: `#-Some list item`
+>
+> **Default:** None
+>
+> **Description:** **Required**. The path to the content you want to include,
+> formatted like an obsidian link. Additionally supports specifying a list
+> item. Multiple headings or multiple list items can be chained in the subpath.
+
+> #### `ranges`
+>
+> **Syntax:** `range, range`
+>
+> **range syntax:**
+>
+> - `"text" to "text"`
+> - `"whole quote"`
+> - `line:col to line:col`
+> - `after "text"`
+> - `after line:col`
+>
+> **Default:** None
+>
+> **Description:** A subselection of the path you would like to embed.
+> Multiple ranges are joined by `, `.
+
+> #### `join`
+>
+> **Syntax:** `"string"`
+>
+> **Default:** `" ... "`
+>
+> **Description:** How to combine multiple ranges.
+> This field is only used if there are 2 or more ranges specified.
+
+> #### `display`
+>
+> **Syntax:**
+>
+> - `embedded`
+> - `inline`
+>
+> **Default:** `embedded`
+>
+> **Description:** How to display the embed.
+
+> #### `show`
+>
+> **Syntax:** `option, option`
+>
+> **options:**
+>
+> - `author`
+> - `title`
+>
+> **Default:** None
+>
+> **Description:** Whether to include the source author or title.
+> Multiple options can be joined with `, `.
 
 ### Deprecated Fields
 
@@ -55,6 +116,7 @@ There are currently some limitations to the current implementation:
 - Copying from preview mode only works if the underlying markdown can be
   reconstructed.
   Things like mathjax are not currently handled.
+  You can always copy from source/live mode.
 - The embedded content cannot contain another quoth code block,
   because that could lead to infinite recursion.
 - Rendering relies on an async call to Obsidian's renderMarkdown API,
