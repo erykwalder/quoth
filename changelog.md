@@ -1,5 +1,11 @@
 # Changelog
 
+### version 0.6.1
+
+Fixes:
+
+- Opening embed links to non-markdown files.
+
 ### version 0.6.0
 
 New Features:
