@@ -4,8 +4,19 @@ import { checkCopyReference, copyButton } from "./commands";
 import { quothProcessor } from "./processors";
 import { selectListener } from "./commands/selection";
 import { replaceBlockquotes } from "./commands/replaceBlockquotes";
-import { DEFAULT_DATA, QuothData, QuothSettingTab } from "./settings";
+import { QuothData, QuothSettingTab } from "./settings";
 import { IndexListener, EmbedCache } from "./model/embedCache";
+
+export const DEFAULT_DATA: QuothData = {
+  copySettings: {
+    defaultShow: {
+      title: false,
+      author: false,
+    },
+    showMobileButton: false,
+  },
+  index: [],
+};
 
 export default class QuothPlugin extends Plugin {
   data: QuothData;
@@ -45,7 +56,7 @@ export default class QuothPlugin extends Plugin {
 
     this.addCommand({
       id: "quoth-replace-blockquotes",
-      name: "Replace Blockquotes with References",
+      name: "Replace Blockquotes with Quoth Embeds",
       editorCallback: replaceBlockquotes.bind(
         null,
         this.app,

@@ -8,17 +8,6 @@ export interface QuothData {
   index: EmbedCache[];
 }
 
-export const DEFAULT_DATA: QuothData = {
-  copySettings: {
-    defaultShow: {
-      title: false,
-      author: false,
-    },
-    showMobileButton: false,
-  },
-  index: [],
-};
-
 export class QuothSettingTab extends PluginSettingTab {
   constructor(
     plugin: Plugin,
