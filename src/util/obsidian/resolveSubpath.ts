@@ -30,7 +30,7 @@ export function resolveSubpath(
       listItems = listItems.filter(
         (li) =>
           li.position.start.offset >= result.start.offset &&
-          li.position.end.offset <= result.end.offset
+          li.position.end.offset <= (result.end?.offset || doc.length)
       );
     }
     const result = resolveList(doc, listItems, subpath.slice(listIndex));
