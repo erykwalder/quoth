@@ -15,7 +15,7 @@ export async function replaceBlockquotes(
     let replaced = 0;
     doc = doc.replace(matcher, (match) => {
       const sourceMatcher = new RegExp(
-        escapeRegex(match.replace(/(?<=^|\n)>/g, ""))
+        escapeRegex(match.replace(/(^|\n)>/g, "$1"))
           .trim()
           .replace(/\s+/g, "\\s*"),
         "m"
@@ -23,10 +23,13 @@ export async function replaceBlockquotes(
       const sourceMatch = sourceDoc.match(sourceMatcher);
       if (sourceMatch) {
         replaced += 1;
-        return buildEmbed(app, settings, sourceFile, sourceDoc, {
-          from: indexPos(sourceDoc, sourceMatch.index),
-          to: indexPos(sourceDoc, sourceMatch.index + sourceMatch[0].length),
-        });
+        return (
+          "\n" +
+          buildEmbed(app, settings, sourceFile, sourceDoc, {
+            from: indexPos(sourceDoc, sourceMatch.index),
+            to: indexPos(sourceDoc, sourceMatch.index + sourceMatch[0].length),
+          })
+        );
       }
       return match;
     });
