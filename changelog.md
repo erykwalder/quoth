@@ -1,5 +1,11 @@
 # Changelog
 
+### version 0.6.2
+
+Fixes:
+
+- Loading plugin on mobile (iOS) due to unsupported regular expression.
+
 ### version 0.6.1
 
 Fixes:
