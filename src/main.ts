@@ -1,11 +1,12 @@
-import { Platform, Plugin } from "obsidian";
+import { Platform, Plugin, TFile } from "obsidian";
 import addIcons from "./addIcons";
 import { checkCopyReference, copyButton } from "./commands";
 import { quothProcessor } from "./processors";
 import { selectListener } from "./commands/selection";
 import { replaceBlockquotes } from "./commands/replaceBlockquotes";
 import { QuothData, QuothSettingTab } from "./settings";
-import { IndexListener, EmbedCache } from "./model/embedCache";
+import { IndexListener, EmbedCache, cacheForSource } from "./model/embedCache";
+import { HighlightPostProcessor } from "./processors/highlighter";
 
 export const DEFAULT_DATA: QuothData = {
   copySettings: {
@@ -35,6 +36,14 @@ export default class QuothPlugin extends Plugin {
     this.registerMarkdownCodeBlockProcessor(
       "quoth",
       quothProcessor.bind(null, this.app)
+    );
+
+    const highlighter = new HighlightPostProcessor(this.app, (file: TFile) => {
+      return cacheForSource(this.data.index, file);
+    });
+    this.registerMarkdownPostProcessor(
+      highlighter.processor.bind(highlighter),
+      100
     );
 
     this.addCommand({

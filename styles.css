@@ -41,3 +41,11 @@
   user-select: text;
   -webkit-user-select: text;
 }
+
+.quoth-highlight {
+  background-color: var(--color-purple-lightest);
+}
+
+.quoth-highlight:hover {
+  background-color: var(--color-purple-light);
+}

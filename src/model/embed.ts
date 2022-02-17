@@ -117,17 +117,8 @@ const lineParsers: { [key: string]: LineParser } = {
     }
   },
   ranges: (text: string, data: Embed) => {
-    // Match: "string" | 10:15 | to | ,
-    // g suffix: match all
-    const tokenRegex = /"([^"\\]|\\.)+"|\d+:\d+|to|after|,/g;
+    const tokens = rangeTokens(text);
     data.ranges = [];
-    const tokens: string[] = [];
-
-    let matches: string[];
-    while ((matches = tokenRegex.exec(text)) !== null) {
-      tokens.push(matches[0]);
-    }
-
     while (tokens.length > 0) {
       data.ranges.push(parseRange(tokens));
       if (tokens.length > 0) {
@@ -171,7 +162,20 @@ const lineParsers: { [key: string]: LineParser } = {
   },
 };
 
-function parseRange(tokens: string[]): Range {
+export function rangeTokens(range: string): string[] {
+  // Match: "string" | 10:15 | to | ,
+  // g suffix: match all
+  const tokenRegex = /"([^"\\]|\\.)+"|\d+:\d+|to|after|,/g;
+  const tokens: string[] = [];
+
+  let matches: string[];
+  while ((matches = tokenRegex.exec(range)) !== null) {
+    tokens.push(matches[0]);
+  }
+  return tokens;
+}
+
+export function parseRange(tokens: string[]): Range {
   const cur = tokens[0];
   if (cur === "after") {
     return parseAfterRange(tokens);

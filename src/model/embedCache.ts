@@ -106,17 +106,19 @@ function renameFile(
 }
 
 function dirtyEmbeds(
-  refs: EmbedCache[],
+  cache: EmbedCache[],
   sourceFile: TFile
 ): Record<string, EmbedCache[]> {
   const cacheByFile: Record<string, EmbedCache[]> = {};
-  refs
-    .filter((e) => e.sourceFile === sourceFile.path)
-    .forEach((e) => {
-      cacheByFile[e.refFile] ||= [];
-      cacheByFile[e.refFile].push(e);
-    });
+  cacheForSource(cache, sourceFile).forEach((e) => {
+    cacheByFile[e.refFile] ||= [];
+    cacheByFile[e.refFile].push(e);
+  });
   return cacheByFile;
+}
+
+export function cacheForSource(cache: EmbedCache[], file: TFile): EmbedCache[] {
+  return cache.filter((e) => e.sourceFile === file.path);
 }
 
 async function updateQuothPathInFiles(
