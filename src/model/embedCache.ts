@@ -71,20 +71,23 @@ export async function fileCache(file: TFile, app: App): Promise<EmbedCache[]> {
   const fileEmbeds: EmbedCache[] = [];
   const fileData = await app.vault.cachedRead(file as TFile);
   quothOffsets(fileData).forEach((offset, idx) => {
-    const embed = parse(fileData.slice(offset.start, offset.end));
-    const sourceFile = this.app.metadataCache.getFirstLinkpathDest(
-      embed.file,
-      file.path
-    );
-    if (sourceFile) {
-      fileEmbeds.push({
-        sourceFile: sourceFile.path,
-        subPath: embed.subpath,
-        ranges: embed.ranges.map((r) => r.toString()),
-        refFile: file.path,
-        refIdx: idx,
-      });
-    }
+    try {
+      const embed = parse(fileData.slice(offset.start, offset.end));
+      const sourceFile = this.app.metadataCache.getFirstLinkpathDest(
+        embed.file,
+        file.path
+      );
+      if (sourceFile) {
+        fileEmbeds.push({
+          sourceFile: sourceFile.path,
+          subPath: embed.subpath,
+          ranges: embed.ranges.map((r) => r.toString()),
+          refFile: file.path,
+          refIdx: idx,
+        });
+      }
+      // eslint-disable-next-line no-empty
+    } catch (e) {}
   });
   return fileEmbeds;
 }
@@ -133,11 +136,14 @@ async function updateQuothPathInFiles(
       // sort for safe string slicing
       cache.sort((a, b) => b.refIdx - a.refIdx);
       cache.forEach((embedCache) => {
-        const { start, end } = offsets[embedCache.refIdx];
-        const embed = parse(refData.slice(start, end));
-        embed.file = app.metadataCache.fileToLinktext(sourceFile, refPath);
-        refData =
-          refData.slice(0, start) + serialize(embed) + refData.slice(end);
+        try {
+          const { start, end } = offsets[embedCache.refIdx];
+          const embed = parse(refData.slice(start, end));
+          embed.file = app.metadataCache.fileToLinktext(sourceFile, refPath);
+          refData =
+            refData.slice(0, start) + serialize(embed) + refData.slice(end);
+          // eslint-disable-next-line no-empty
+        } catch (e) {}
       });
       await app.vault.modify(refFile, refData);
     })
