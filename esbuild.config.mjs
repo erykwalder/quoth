@@ -17,6 +17,8 @@ esbuild
     entryPoints: ["src/main.ts"],
     bundle: true,
     external: [
+      "@types/codemirror",
+      "codemirror",
       "obsidian",
       "electron",
       "@codemirror/autocomplete",
