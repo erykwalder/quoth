@@ -32,19 +32,12 @@ export default class QuothPlugin extends Plugin {
       })
     );
 
-    this.registerMarkdownCodeBlockProcessor(
-      "quoth",
-      quothProcessor.bind(null, this.app)
-    );
+    this.registerMarkdownCodeBlockProcessor("quoth", quothProcessor);
 
     this.addCommand({
       id: "quoth-copy-reference",
       name: "Copy Reference",
-      checkCallback: checkCopyReference.bind(
-        null,
-        this.app,
-        this.data.copySettings
-      ),
+      checkCallback: checkCopyReference.bind(null, this.data.copySettings),
       hotkeys: [
         {
           modifiers: ["Shift", "Mod"],
@@ -57,11 +50,7 @@ export default class QuothPlugin extends Plugin {
     this.addCommand({
       id: "quoth-replace-blockquotes",
       name: "Replace Blockquotes with Quoth Embeds",
-      editorCallback: replaceBlockquotes.bind(
-        null,
-        this.app,
-        this.data.copySettings
-      ),
+      editorCallback: replaceBlockquotes.bind(null, this.data.copySettings),
     });
 
     this.registerDomEvent(document, "selectionchange", selectListener);
@@ -69,12 +58,11 @@ export default class QuothPlugin extends Plugin {
       this.registerDomEvent(
         document,
         "selectionchange",
-        copyButton.bind(null, this.app, this.data.copySettings)
+        copyButton.bind(null, this.data.copySettings)
       );
     }
 
     const indexListener = new IndexListener(
-      this.app,
       () => this.data.index,
       async (refs: EmbedCache[]) => {
         this.data.index = refs;
