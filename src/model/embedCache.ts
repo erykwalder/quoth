@@ -1,4 +1,4 @@
-import { App, TAbstractFile, TFile } from "obsidian";
+import { TAbstractFile, TFile } from "obsidian";
 import { parse, serialize } from "./embed";
 import { escapeRegex } from "../util/escapeRegex";
 
@@ -12,7 +12,6 @@ export interface EmbedCache {
 
 export class IndexListener {
   constructor(
-    private app: App,
     private load: () => EmbedCache[],
     private save: (refs: EmbedCache[]) => Promise<void>
   ) {}
@@ -23,7 +22,7 @@ export class IndexListener {
       refs = renameFile(refs, file as TFile, oldPath);
       await this.save(refs);
       const dirtyRefs = dirtyEmbeds(refs, file as TFile);
-      await updateQuothPathInFiles(dirtyRefs, this.app, file as TFile, oldPath);
+      await updateQuothPathInFiles(dirtyRefs, file as TFile, oldPath);
     }
   }
 
@@ -38,7 +37,7 @@ export class IndexListener {
     const embeds = this.load();
     if (file instanceof TFile) {
       const filtered = filterOutFile(embeds, file as TFile);
-      const fileEmbeds = await fileCache(file as TFile, this.app);
+      const fileEmbeds = await fileCache(file as TFile);
       if (filtered.length !== embeds.length || fileEmbeds.length > 0) {
         this.save([...filtered, ...fileEmbeds]);
       }
@@ -56,24 +55,24 @@ function filterOutFile(cache: EmbedCache[], file: TFile): EmbedCache[] {
   return cache.filter((e) => e.refFile !== file.path);
 }
 
-export async function buildIndex(app: App): Promise<EmbedCache[]> {
+export async function buildIndex(): Promise<EmbedCache[]> {
   const mdFiles = app.vault.getMarkdownFiles();
   return (
     await Promise.all(
       mdFiles.map(async (file) => {
-        return await fileCache(file, this.app);
+        return await fileCache(file);
       })
     )
   ).flat();
 }
 
-export async function fileCache(file: TFile, app: App): Promise<EmbedCache[]> {
+export async function fileCache(file: TFile): Promise<EmbedCache[]> {
   const fileEmbeds: EmbedCache[] = [];
   const fileData = await app.vault.cachedRead(file as TFile);
   quothOffsets(fileData).forEach((offset, idx) => {
     try {
       const embed = parse(fileData.slice(offset.start, offset.end));
-      const sourceFile = this.app.metadataCache.getFirstLinkpathDest(
+      const sourceFile = app.metadataCache.getFirstLinkpathDest(
         embed.file,
         file.path
       );
@@ -124,14 +123,13 @@ function dirtyEmbeds(
 
 async function updateQuothPathInFiles(
   cacheByFile: Record<string, EmbedCache[]>,
-  app: App,
   sourceFile: TFile,
   oldPath: string
 ): Promise<void> {
   await Promise.all(
     map(cacheByFile, async (refPath: string, cache: EmbedCache[]) => {
       const refFile = app.vault.getAbstractFileByPath(refPath) as TFile;
-      let refData = await safeReadFile(app, refFile, oldPath);
+      let refData = await safeReadFile(refFile, oldPath);
       const offsets = quothOffsets(refData);
       // sort for safe string slicing
       cache.sort((a, b) => b.refIdx - a.refIdx);
@@ -169,11 +167,7 @@ function quothOffsets(fileData: string): { start: number; end: number }[] {
 
 const CHECK_SAFE_ATTEMPTS = 10;
 const CHECK_SAFE_WAIT = 50;
-async function safeReadFile(
-  app: App,
-  file: TFile,
-  oldPath: string
-): Promise<string> {
+async function safeReadFile(file: TFile, oldPath: string): Promise<string> {
   let fileData;
   for (let i = 0; i < CHECK_SAFE_ATTEMPTS; i++) {
     fileData = await app.vault.cachedRead(file);

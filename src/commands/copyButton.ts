@@ -1,9 +1,9 @@
-import { App, MarkdownView, setIcon } from "obsidian";
+import { MarkdownView, setIcon } from "obsidian";
 import { CopySettings } from "./buildEmbed";
 import { isTextSelected } from "./selection";
 import { checkCopyReference } from "./copyReference";
 
-export function copyButton(app: App, settings: CopySettings): void {
+export function copyButton(settings: CopySettings): void {
   if (!settings.showMobileButton) {
     return;
   }
@@ -14,7 +14,7 @@ export function copyButton(app: App, settings: CopySettings): void {
         view.previewMode.containerEl.createDiv("quoth-copy-button");
       setIcon(button, "quoth-copy", 30);
       button.addEventListener("click", () => {
-        checkCopyReference(app, settings, false);
+        checkCopyReference(settings, false);
         button.remove();
       });
     }

@@ -1,14 +1,13 @@
-import { App, Editor, FuzzySuggestModal, Notice, TFile } from "obsidian";
+import { Editor, FuzzySuggestModal, Notice, TFile } from "obsidian";
 import { buildEmbed, CopySettings } from "./buildEmbed";
 import { escapeRegex } from "../util/escapeRegex";
 import { indexPos } from "../util/stringSearch";
 
 export async function replaceBlockquotes(
-  app: App,
   settings: CopySettings,
   editor: Editor
 ): Promise<void> {
-  const modal = new FileSuggester(app, async (sourceFile: TFile) => {
+  const modal = new FileSuggester(async (sourceFile: TFile) => {
     let doc = editor.getValue();
     const matcher = /(?:(?:^|\n)>[^\n]+)+/gm;
     const sourceDoc = await app.vault.cachedRead(sourceFile);
@@ -25,7 +24,7 @@ export async function replaceBlockquotes(
         replaced += 1;
         return (
           "\n" +
-          buildEmbed(app, settings, sourceFile, sourceDoc, {
+          buildEmbed(settings, sourceFile, sourceDoc, {
             from: indexPos(sourceDoc, sourceMatch.index),
             to: indexPos(sourceDoc, sourceMatch.index + sourceMatch[0].length),
           })
@@ -51,7 +50,7 @@ export async function replaceBlockquotes(
 }
 
 class FileSuggester extends FuzzySuggestModal<TFile> {
-  constructor(public app: App, private cb: (file: TFile) => void) {
+  constructor(private cb: (file: TFile) => void) {
     super(app);
     this.setPlaceholder("Type source filename...");
   }

@@ -41,7 +41,7 @@ export class QuothSettingTab extends PluginSettingTab {
             }
             button.setDisabled(true);
             button.setButtonText("Rebuilding Index...");
-            this.data.index = await buildIndex(this.app);
+            this.data.index = await buildIndex();
             await this.saveSettings();
             button.setDisabled(false);
             button.setButtonText("Rebuild Index");

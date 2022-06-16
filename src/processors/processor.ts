@@ -1,5 +1,4 @@
 import {
-  App,
   CachedMetadata,
   Keymap,
   MarkdownPostProcessorContext,
@@ -21,25 +20,20 @@ interface Quote {
 }
 
 export async function quothProcessor(
-  app: App,
   source: string,
   el: HTMLElement,
   ctx: MarkdownPostProcessorContext
 ) {
   try {
     const embed = parse(source);
-    const quote = await assembleQuote(app, ctx.sourcePath, embed);
-    renderQuote(app, el, ctx.sourcePath, quote, embed.display, embed.show);
+    const quote = await assembleQuote(ctx.sourcePath, embed);
+    renderQuote(el, ctx.sourcePath, quote, embed.display, embed.show);
   } catch (e) {
     renderError(el, e);
   }
 }
 
-async function assembleQuote(
-  app: App,
-  source: string,
-  embed: Embed
-): Promise<Quote> {
+async function assembleQuote(source: string, embed: Embed): Promise<Quote> {
   if (embed.file === "") {
     throw new Error("File must be set in block");
   }
@@ -100,7 +94,6 @@ function quoteContent(data: string, cache: CachedMetadata, subpath: string) {
 }
 
 function renderQuote(
-  app: App,
   el: HTMLElement,
   source: string,
   quote: Quote,
@@ -116,7 +109,7 @@ function renderQuote(
     throw new Error("Can not quote a quoth code block.");
   }
   MarkdownRenderer.renderMarkdown(quote.markdown, el, source, null);
-  renderOptions(el, app, source, show, quote);
+  renderOptions(el, source, show, quote);
 }
 
 function createEmbedWrapper(
@@ -169,7 +162,6 @@ function createEmbedWrapper(
 
 function renderOptions(
   el: HTMLElement,
-  app: App,
   sourcePath: string,
   show: EmbedOptions,
   quote: Quote

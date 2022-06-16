@@ -1,4 +1,4 @@
-import { App, EditorRange, resolveSubpath, TFile } from "obsidian";
+import { EditorRange, resolveSubpath, TFile } from "obsidian";
 import {
   DEFAULT_DISPLAY,
   DEFAULT_JOIN,
@@ -24,7 +24,6 @@ export interface CopySettings {
 }
 
 export function buildEmbed(
-  app: App,
   settings: CopySettings,
   file: TFile,
   text: string,

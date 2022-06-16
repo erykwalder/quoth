@@ -1,5 +1,4 @@
 import {
-  App,
   Editor,
   EditorRange,
   EditorSelection,
@@ -11,7 +10,6 @@ import { rangeRegex } from "./rangeRegex";
 import { getSelectedRange, isTextSelected } from "./selection";
 
 export function checkCopyReference(
-  app: App,
   settings: CopySettings,
   checking: boolean
 ): boolean {
@@ -21,7 +19,6 @@ export function checkCopyReference(
     try {
       navigator.clipboard.writeText(
         buildEmbed(
-          app,
           settings,
           view.file,
           view.editor.getValue(),
