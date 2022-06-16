@@ -23,6 +23,10 @@
     "jest-environment-jsdom": "^28.1.1",
     "jsdom": "^19.0.0",
     "obsidian": "^0.15.1",
+    "remark": "^14.0.2",
+    "remark-frontmatter": "^4.0.1",
+    "remark-gfm": "^3.0.1",
+    "remark-math": "^5.1.1",
     "ts-jest": "^28.0.5",
     "tslib": "^2.4.0",
     "typescript": "^4.7.3"
