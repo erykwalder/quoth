@@ -49,9 +49,32 @@
 }
 
 .markdown-source-view .block-language-quoth + .edit-block-button {
-  top: calc(var(--icon-s) + var(--size-4-3));
+  top: calc((var(--icon-s) + var(--size-4-3)) * 2);
 }
 
 .markdown-source-view .block-language-quoth .markdown-embed-link {
   padding: var(--size-2-2) var(--size-2-3);
+}
+
+.quoth-item-copy {
+  position: absolute;
+  top: calc(var(--icon-s) + var(--size-4-3));
+  right: 4px;
+  color: var(--icon-color);
+  opacity: var(--icon-opacity);
+  cursor: var(--cursor-link);
+  padding: var(--size-2-2) var(--size-2-3);
+  border-radius: var(--radius-s);
+  display: flex;
+  align-items: center;
+  --icon-size: var(--icon-s);
+  --icon-stroke: var(--icon-s-stroke-width);
+}
+
+@media (hover: hover) {
+  .quoth-item-copy:hover {
+    color: var(--icon-color-hover);
+    opacity: var(--icon-opacity-hover);
+    background: var(--background-modifier-hover);
+  }
 }

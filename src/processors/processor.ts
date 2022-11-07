@@ -12,6 +12,7 @@ import { languageMap } from "./languageMap";
 import { resolveSubpath } from "../util/obsidian/resolveSubpath";
 
 interface Quote {
+  raw: string;
   file: TFile;
   subpath: string;
   markdown: string;
@@ -27,14 +28,18 @@ export async function quothProcessor(
 ) {
   try {
     const embed = parse(source);
-    const quote = await assembleQuote(ctx.sourcePath, embed);
+    const quote = await assembleQuote(ctx.sourcePath, source, embed);
     renderQuote(el, ctx.sourcePath, quote, embed.display, embed.show);
   } catch (e) {
     renderError(el, e);
   }
 }
 
-async function assembleQuote(source: string, embed: Embed): Promise<Quote> {
+async function assembleQuote(
+  source: string,
+  raw: string,
+  embed: Embed
+): Promise<Quote> {
   if (embed.file === "") {
     throw new Error("File must be set in block");
   }
@@ -74,6 +79,7 @@ async function assembleQuote(source: string, embed: Embed): Promise<Quote> {
   }
 
   return {
+    raw: raw,
     file: file,
     subpath: embed.subpath,
     markdown: quote,
@@ -159,6 +165,15 @@ function createEmbedWrapper(
         Keymap.isModEvent(e)
       );
     }
+  });
+
+  const mdCopy = mdEmbed.createDiv({
+    cls: "quoth-item-copy",
+    attr: { "aria-label": "Copy Quoth" },
+  });
+  setIcon(mdCopy, "copy", 20);
+  mdCopy.addEventListener("click", async () => {
+    navigator.clipboard.writeText("```quoth\n" + quote.raw + "\n```");
   });
 
   return mdPrevSec.createDiv();
