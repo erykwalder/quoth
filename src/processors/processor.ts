@@ -17,6 +17,7 @@ interface Quote {
   markdown: string;
   title: string;
   author?: string;
+  cssclass?: string;
 }
 
 export async function quothProcessor(
@@ -78,6 +79,7 @@ async function assembleQuote(source: string, embed: Embed): Promise<Quote> {
     markdown: quote,
     title: file.basename,
     author: fileCache?.frontmatter?.author as string | undefined,
+    cssclass: fileCache?.frontmatter?.cssclass as string | undefined,
   };
 }
 
@@ -128,7 +130,9 @@ function createEmbedWrapper(
   });
   const mdEmbed = span.createDiv({ cls: "markdown-embed" });
   const mdEmbedCont = mdEmbed.createDiv({ cls: "markdown-embed-content" });
-  const mdPrev = mdEmbedCont.createDiv({ cls: "quoth-embedded-view" });
+  const mdPrev = mdEmbedCont.createDiv({
+    cls: ["quoth-embedded-view", quote.cssclass].join(" "),
+  });
   const mdPrevSec = mdPrev.createDiv({
     cls: "markdown-preview-sizer markdown-preview-section",
     attr: {
