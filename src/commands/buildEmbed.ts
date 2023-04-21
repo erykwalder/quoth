@@ -38,6 +38,9 @@ export function buildEmbed(
   const subpath = scopeSubpath(fileCache, editorRange);
   if (subpath.length > 0) {
     const subpathResult = resolveSubpath(fileCache, subpath);
+    if (!subpathResult) {
+      console.log("Could not copy reference, please file a bug report");
+    }
     text = text.slice(subpathResult.start.offset, subpathResult.end?.offset);
     editorRange.from.line -= subpathResult.start.line;
     editorRange.to.line -= subpathResult.start.line;
