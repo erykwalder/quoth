@@ -1,5 +1,19 @@
 # Changelog
 
+### version 0.7.0
+
+New Features:
+
+- cssclass is included on embedded quoths
+- copy quoth button, for quickly copying an existing
+  quoth to a new location
+
+Fixes:
+
+- Styling to work with latest version of obsidian
+- More errors caught and prevent crashing
+- Generation of path for complex headings
+
 ### version 0.6.2
 
 Fixes:
