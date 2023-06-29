@@ -3,7 +3,10 @@ import { escapeRegex } from "../util/escapeRegex";
 export function rangeRegex(range: Range): RegExp {
   return new RegExp(
     getRangePrefix(range) +
-      getRangeText(range).join(".*?").trim().replace(/\s+/gm, "\\s+") +
+      getRangeText(range)
+        .join("(<[A-Za-z]+>|[^A-Za-z])*?")
+        .trim()
+        .replace(/\s+/gm, "\\s+") +
       getRangeSuffix(range),
     "ms"
   );
