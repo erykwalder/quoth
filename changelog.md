@@ -1,5 +1,11 @@
 # Changelog
 
+### version 0.7.1
+
+Fixes:
+
+- Text selection in preview mode no longer selects too much
+
 ### version 0.7.0
 
 New Features:
