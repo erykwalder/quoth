@@ -4,7 +4,7 @@ export function rangeRegex(range: Range): RegExp {
   return new RegExp(
     getRangePrefix(range) +
       getRangeText(range)
-        .join("(<[A-Za-z]+>|[^A-Za-z])*?")
+        .join("(<\\/?[A-Za-z]+>|[^A-Za-z])*?")
         .trim()
         .replace(/\s+/gm, "\\s+") +
       getRangeSuffix(range),
