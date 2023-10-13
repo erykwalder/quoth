@@ -1,6 +1,6 @@
 import { MarkdownView, setIcon } from "obsidian";
 import { CopySettings } from "./buildEmbed";
-import { isTextSelected } from "./selection";
+import { isTextSelected, clearSelection } from "./selection";
 import { checkCopyReference } from "./copyReference";
 
 export function copyButton(settings: CopySettings): void {
@@ -12,15 +12,20 @@ export function copyButton(settings: CopySettings): void {
     if (!view.previewMode.containerEl.querySelector(".quoth-copy-button")) {
       const button =
         view.previewMode.containerEl.createDiv("quoth-copy-button");
-      setIcon(button, "quoth-copy", 30);
+      setIcon(button, "quoth-copy");
       button.addEventListener("click", () => {
         checkCopyReference(settings, false);
-        button.remove();
+        clearSelection();
+        removeAllButtons(view);
       });
     }
   } else if (view?.getMode() === "preview") {
-    view.previewMode.containerEl
-      .querySelectorAll(".quoth-copy-button")
-      .forEach((b) => b.remove());
+    removeAllButtons(view);
   }
+}
+
+function removeAllButtons(view: MarkdownView) {
+  view.previewMode.containerEl
+    .querySelectorAll(".quoth-copy-button")
+    .forEach((b) => b.remove());
 }

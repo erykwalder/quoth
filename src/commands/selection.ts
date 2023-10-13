@@ -4,6 +4,11 @@ export function getSelectedRange(): Range {
   return lastRange;
 }
 
+export function clearSelection(): void {
+  document.getSelection().empty();
+  lastRange.collapse();
+}
+
 export function isTextSelected(): boolean {
   return !getSelectedRange()?.collapsed;
 }

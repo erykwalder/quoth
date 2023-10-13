@@ -3,6 +3,7 @@ import {
   Keymap,
   MarkdownPostProcessorContext,
   MarkdownRenderer,
+  PaneType,
   setIcon,
   TFile,
 } from "obsidian";
@@ -124,7 +125,7 @@ function createEmbedWrapper(
   el: HTMLElement,
   sourcePath: string,
   quote: Quote,
-  openLink: (p: string, s: string, n: boolean) => Promise<void>
+  openLink: (p: string, s: string, n: boolean | PaneType) => Promise<void>
 ): HTMLElement {
   const path = quote.title + quote.subpath;
   const span = el.createSpan({
@@ -156,7 +157,7 @@ function createEmbedWrapper(
     cls: "markdown-embed-link",
     attr: { "aria-label": "Open Link" },
   });
-  setIcon(mdLink, "link", 20);
+  setIcon(mdLink, "link");
   mdLink.addEventListener("click", async (e) => {
     if (e.button === 0) {
       await openLink(
@@ -171,7 +172,7 @@ function createEmbedWrapper(
     cls: "quoth-item-copy",
     attr: { "aria-label": "Copy Quoth" },
   });
-  setIcon(mdCopy, "copy", 20);
+  setIcon(mdCopy, "copy");
   mdCopy.addEventListener("click", async () => {
     navigator.clipboard.writeText("```quoth\n" + quote.raw + "\n```");
   });
