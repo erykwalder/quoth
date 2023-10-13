@@ -3,12 +3,12 @@ import {
   CachedMetadata,
   EditorRange,
   HeadingCache,
-  stripHeading,
 } from "obsidian";
 
 export function scopeSubpath(
   cache: CachedMetadata,
-  range: EditorRange
+  range: EditorRange,
+  cleaner: (s: string) => string = (s) => s
 ): string {
   const block = getContainingBlock(cache.blocks, range);
   if (block) {
@@ -27,7 +27,7 @@ export function scopeSubpath(
       "#" +
       headings
         .slice(-uniqueLen)
-        .map((h) => stripHeading(h.heading))
+        .map((h) => cleaner(h.heading))
         .join("#")
     );
   }

@@ -1,4 +1,4 @@
-import { EditorRange, resolveSubpath, TFile } from "obsidian";
+import { EditorRange, resolveSubpath, stripHeading, TFile } from "obsidian";
 import {
   DEFAULT_DISPLAY,
   DEFAULT_JOIN,
@@ -35,7 +35,7 @@ export function buildEmbed(
   );
 
   const fileCache = app.metadataCache.getFileCache(file);
-  const subpath = scopeSubpath(fileCache, editorRange);
+  const subpath = scopeSubpath(fileCache, editorRange, stripHeading);
   if (subpath.length > 0) {
     const subpathResult = resolveSubpath(fileCache, subpath);
     if (!subpathResult) {
